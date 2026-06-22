@@ -1,0 +1,711 @@
+:root {
+  color-scheme: dark;
+  --bg: #101316;
+  --panel: #1c2228;
+  --panel-strong: #252d34;
+  --text: #eef2f3;
+  --muted: #9aa7ad;
+  --line: #34414a;
+  --accent: #ffc247;
+  --accent-strong: #ffda7a;
+  --danger: #ff7166;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  background:
+    radial-gradient(circle at 18% 12%, rgba(255, 194, 71, 0.1), transparent 22rem),
+    linear-gradient(135deg, #101316 0%, #161a1d 58%, #121619 100%);
+  color: var(--text);
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.app-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.topbar {
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(16, 19, 22, 0.82);
+  backdrop-filter: blur(14px);
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.brand strong {
+  font-size: 18px;
+  line-height: 1.1;
+}
+
+.brand span,
+.status {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.hud {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.hud-pill {
+  min-width: 74px;
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: baseline;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  background: rgba(37, 45, 52, 0.82);
+}
+
+.hud-pill span {
+  color: var(--accent-strong);
+  font-weight: 800;
+}
+
+.hud-pill small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.status-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--danger);
+  box-shadow: 0 0 18px rgba(255, 113, 102, 0.45);
+}
+
+.status-dot.ready {
+  background: #73dd9a;
+  box-shadow: 0 0 18px rgba(115, 221, 154, 0.45);
+}
+
+.stage {
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.play-space {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+}
+
+.game-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: pointer;
+}
+
+.side-panels {
+  min-height: 0;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(18, 23, 27, 0.94);
+  overflow: auto;
+}
+
+.trading-panel,
+.duel-panel,
+.capital-panel,
+.tape-panel,
+.season-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+}
+
+.duel-panel,
+.capital-panel,
+.tape-panel,
+.season-panel {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.trading-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.trading-header div:first-child,
+.chart-title {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.trading-header strong,
+.chart-title strong,
+.positions-card strong,
+.orders-card strong {
+  font-size: 14px;
+}
+
+.trading-header span,
+.chart-title span,
+.credit-balance small,
+.trade-form label span,
+.trade-message {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.credit-balance {
+  display: grid;
+  gap: 1px;
+  justify-items: end;
+}
+
+.credit-balance span {
+  color: var(--accent-strong);
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.asset-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.asset-row,
+.side-toggle button,
+.trade-form button {
+  min-height: 38px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: var(--text);
+  background: rgba(37, 45, 52, 0.82);
+  cursor: pointer;
+}
+
+.asset-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 10px;
+}
+
+.asset-row span {
+  font-weight: 800;
+}
+
+.asset-row small {
+  color: var(--muted);
+}
+
+.asset-row.active,
+.side-toggle button.active {
+  border-color: rgba(255, 194, 71, 0.8);
+  background: rgba(255, 194, 71, 0.16);
+}
+
+.chart-card,
+.positions-card,
+.orders-card,
+.trade-form {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: rgba(28, 34, 40, 0.78);
+  padding: 12px;
+}
+
+.price-chart {
+  width: 100%;
+  height: 128px;
+  margin-top: 10px;
+  display: block;
+}
+
+.price-chart path {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.08);
+  stroke-width: 1;
+}
+
+.price-chart polyline {
+  fill: none;
+  stroke: var(--accent-strong);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 3;
+}
+
+.trade-form {
+  display: grid;
+  gap: 10px;
+}
+
+.side-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.trade-form label {
+  display: grid;
+  gap: 6px;
+}
+
+.trade-form input,
+.duel-card input,
+.duel-card select,
+.capital-card input,
+.capital-card select {
+  width: 100%;
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--text);
+  background: #12171b;
+}
+
+.rank-button,
+.duel-card button,
+.duel-row button,
+.duel-result button,
+.capital-card button {
+  min-height: 34px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: var(--text);
+  background: rgba(37, 45, 52, 0.82);
+  cursor: pointer;
+}
+
+.rank-button.ranked,
+.duel-card > button,
+.capital-card > button {
+  color: #1b1710;
+  background: var(--accent);
+  border: 0;
+  font-weight: 800;
+}
+
+.rank-card,
+.duel-card,
+.leaderboard,
+.capital-card {
+  display: grid;
+  gap: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: rgba(28, 34, 40, 0.78);
+  padding: 12px;
+}
+
+.rank-card {
+  grid-template-columns: 1fr 1fr;
+}
+
+.rank-card div,
+.duel-card label,
+.capital-card label {
+  display: grid;
+  gap: 4px;
+}
+
+.rank-card span,
+.duel-card label span,
+.capital-card label span,
+.duel-result small,
+.leaderboard small,
+.capital-card small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.duel-row,
+.duel-result,
+.leader-row,
+.allocation-row {
+  display: grid;
+  gap: 8px;
+  align-items: center;
+  min-height: 30px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  font-size: 12px;
+}
+
+.duel-row {
+  grid-template-columns: 0.7fr 0.8fr 1fr auto;
+}
+
+.duel-result {
+  grid-template-columns: 1fr;
+}
+
+.leader-row {
+  grid-template-columns: 1fr 0.9fr 1fr;
+}
+
+.allocation-row {
+  grid-template-columns: 0.9fr 1fr 0.8fr auto auto;
+}
+
+.leaderboards {
+  display: grid;
+  gap: 12px;
+}
+
+.trade-form button[type="submit"] {
+  color: #1b1710;
+  background: var(--accent);
+  border: 0;
+  font-weight: 800;
+}
+
+.trade-form button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.trade-message {
+  min-height: 18px;
+}
+
+.tape-status {
+  min-width: 74px;
+  min-height: 28px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  color: var(--muted);
+  background: rgba(37, 45, 52, 0.72);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.tape-status.open {
+  color: #c9ffdf;
+  border-color: rgba(141, 242, 188, 0.35);
+}
+
+.tape-status.settled {
+  color: var(--accent-strong);
+  border-color: rgba(255, 194, 71, 0.45);
+}
+
+.tape-card,
+.tape-side,
+.tape-roster {
+  display: grid;
+  gap: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: rgba(28, 34, 40, 0.78);
+  padding: 12px;
+}
+
+.tape-round-card {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.tape-round-card div,
+.tape-proof-row {
+  display: grid;
+  gap: 3px;
+}
+
+.tape-round-card .label,
+.tape-proof-row span,
+.microcopy,
+.tape-roster small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.tape-sides {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.tape-side {
+  min-height: 84px;
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.tape-side span {
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.tape-side strong {
+  font-size: 20px;
+}
+
+.tape-side.up {
+  background: linear-gradient(180deg, rgba(46, 115, 82, 0.42), rgba(28, 34, 40, 0.78));
+}
+
+.tape-side.down {
+  background: linear-gradient(180deg, rgba(117, 54, 72, 0.44), rgba(28, 34, 40, 0.78));
+}
+
+.tape-side.winner {
+  border-color: rgba(255, 194, 71, 0.72);
+}
+
+.tape-proof-row {
+  grid-template-columns: 64px minmax(0, 1fr);
+  align-items: center;
+}
+
+.tape-proof-row code {
+  overflow: hidden;
+  color: var(--accent-strong);
+  font-size: 11px;
+  text-overflow: ellipsis;
+}
+
+.tape-result {
+  min-height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  color: #1b1710;
+  background: var(--accent);
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.tape-roster div {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 8px;
+  align-items: center;
+  min-height: 26px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  font-size: 12px;
+}
+
+.season-gate {
+  min-width: 86px;
+  min-height: 28px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid rgba(255, 194, 71, 0.4);
+  border-radius: 999px;
+  color: var(--accent-strong);
+  background: rgba(255, 194, 71, 0.1);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.season-gate.armed {
+  color: #ffd1d8;
+  border-color: rgba(255, 116, 140, 0.65);
+  background: rgba(117, 54, 72, 0.42);
+}
+
+.season-card {
+  display: grid;
+  gap: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: rgba(28, 34, 40, 0.78);
+  padding: 12px;
+}
+
+.season-summary {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.season-summary div {
+  display: grid;
+  gap: 3px;
+}
+
+.season-summary span,
+.season-card small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.season-row {
+  display: grid;
+  grid-template-columns: 0.55fr 1fr 0.95fr;
+  gap: 8px;
+  align-items: center;
+  min-height: 28px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  font-size: 12px;
+}
+
+.season-row strong {
+  text-align: right;
+}
+
+.positions-card,
+.orders-card {
+  display: grid;
+  gap: 10px;
+}
+
+.positions-table,
+.orders-card {
+  font-size: 12px;
+}
+
+.position-row,
+.order-row {
+  display: grid;
+  grid-template-columns: 0.8fr 0.8fr 1fr 1fr;
+  gap: 8px;
+  align-items: center;
+  min-height: 28px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.position-row span,
+.order-row span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.positive {
+  color: #73dd9a;
+}
+
+.negative {
+  color: var(--danger);
+}
+
+.entry-wrap {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.entry-panel {
+  width: min(420px, 100%);
+  padding: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: rgba(28, 34, 40, 0.92);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.3);
+}
+
+.entry-panel h1 {
+  margin: 0 0 8px;
+  font-size: 28px;
+  letter-spacing: 0;
+}
+
+.entry-panel p {
+  margin: 0 0 22px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.entry-form {
+  display: grid;
+  gap: 12px;
+}
+
+.entry-form input {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 13px;
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #12171b;
+  outline: none;
+}
+
+.entry-form input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(255, 194, 71, 0.16);
+}
+
+.entry-form button {
+  min-height: 46px;
+  border: 0;
+  border-radius: 6px;
+  color: #1b1710;
+  background: var(--accent);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.entry-form button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.error {
+  min-height: 20px;
+  color: var(--danger);
+  font-size: 13px;
+}
+
+@media (max-width: 720px) {
+  .topbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .play-space {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(420px, 58vh) auto;
+  }
+
+  .side-panels {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-left: 0;
+  }
+}
