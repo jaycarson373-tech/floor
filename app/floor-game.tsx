@@ -292,15 +292,16 @@ function FloorCanvas({
       const { dw, dh, offsetY } = SPRITE_SIZES[key];
       const dx = cx - dw / 2;
       const dy = baseY + offsetY;
+      ctx.save();
+      ctx.globalCompositeOperation = "screen";
       if (glowColor) {
-        ctx.save();
         ctx.shadowColor = glowColor;
         ctx.shadowBlur = 22;
         ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
-        ctx.restore();
       } else {
         ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
       }
+      ctx.restore();
     }
 
     function drawDiamond(gx: number, gy: number, fillStyle: string, strokeStyle: string, inset = 0) {
