@@ -138,9 +138,29 @@ function PlayerEntry({ onJoin }: { onJoin: (name: string) => Promise<void> }) {
 
   return (
     <main className="entry-wrap">
+      <div className="entry-orbit" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+      </div>
       <section className="entry-panel">
+        <div className="entry-kicker">Live hedge fund floor</div>
         <h1>The Floor</h1>
-        <p>Enter a temporary name for this browser session.</p>
+        <p>Step onto the trading floor, take a desk, and climb from analyst to boss.</p>
+        <div className="entry-stats" aria-hidden="true">
+          <div>
+            <strong>The Tape</strong>
+            <span>UP / DOWN PvP</span>
+          </div>
+          <div>
+            <strong>10,000</strong>
+            <span>Test Credits</span>
+          </div>
+          <div>
+            <strong>Ranked</strong>
+            <span>Wallet-gated</span>
+          </div>
+        </div>
         <form className="entry-form" onSubmit={submit}>
           <input
             autoFocus
@@ -150,7 +170,7 @@ function PlayerEntry({ onJoin }: { onJoin: (name: string) => Promise<void> }) {
             onChange={(event) => setName(event.target.value)}
           />
           <button disabled={submitting} type="submit">
-            {submitting ? "Entering..." : "Enter"}
+            {submitting ? "Opening desk..." : "Enter The Floor"}
           </button>
           <div className="error" role="status">
             {error}
@@ -249,10 +269,24 @@ function FloorCanvas({
       const plaza = gx >= 5 && gx <= 10 && gy >= 4 && gy <= 8;
       const edge = gx === 0 || gy === 0 || gx === GRID_WIDTH - 1 || gy === GRID_HEIGHT - 1;
       const tapeSide = tapeSideAt(gx, gy);
-      const fill = tapeSide === "up" ? "#2e7352" : tapeSide === "down" ? "#753648" : blocked ? "#29313a" : plaza ? "#53616b" : edge ? "#334048" : "#45525b";
-      const stroke = tapeSide === "up" ? "#8df2bc" : tapeSide === "down" ? "#ff9bad" : blocked ? "#20262d" : plaza ? "#78858c" : "#60707a";
+      const fill = tapeSide === "up" ? "#0f6b45" : tapeSide === "down" ? "#723246" : blocked ? "#071015" : plaza ? "#172830" : edge ? "#10272b" : "#162b33";
+      const stroke = tapeSide === "up" ? "#00f59b" : tapeSide === "down" ? "#ff6f8b" : blocked ? "#0e1d24" : plaza ? "#2f5964" : edge ? "#00f59b" : "#2d4852";
 
       drawDiamond(gx, gy, fill, stroke);
+
+      if (edge && !blocked) {
+        const point = gridToScreen(gx, gy);
+        ctx.save();
+        ctx.globalCompositeOperation = "lighter";
+        ctx.strokeStyle = gx + gy > GRID_WIDTH ? "rgba(255, 194, 71, 0.48)" : "rgba(0, 245, 155, 0.5)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(point.x - TILE_WIDTH / 2 + 8, point.y + TILE_HEIGHT / 2);
+        ctx.lineTo(point.x, point.y + TILE_HEIGHT - 8);
+        ctx.lineTo(point.x + TILE_WIDTH / 2 - 8, point.y + TILE_HEIGHT / 2);
+        ctx.stroke();
+        ctx.restore();
+      }
 
       if (tapeSide && !blocked) {
         const point = gridToScreen(gx, gy);
@@ -276,7 +310,7 @@ function FloorCanvas({
         ctx.moveTo(point.x - TILE_WIDTH / 2 + 10, point.y + TILE_HEIGHT / 2);
         ctx.lineTo(point.x, point.y + TILE_HEIGHT - 10);
         ctx.lineTo(point.x + TILE_WIDTH / 2 - 10, point.y + TILE_HEIGHT / 2);
-        ctx.strokeStyle = `rgba(255, 211, 128, ${0.08 + pulse * 0.02})`;
+        ctx.strokeStyle = `rgba(0, 245, 155, ${0.18 + pulse * 0.04})`;
         ctx.stroke();
       }
 
@@ -286,7 +320,7 @@ function FloorCanvas({
         ctx.moveTo(point.x - TILE_WIDTH / 2 + 8, point.y + TILE_HEIGHT / 2);
         ctx.lineTo(point.x, point.y + TILE_HEIGHT - 8);
         ctx.lineTo(point.x + TILE_WIDTH / 2 - 8, point.y + TILE_HEIGHT / 2);
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.06)";
+        ctx.strokeStyle = "rgba(190, 255, 236, 0.055)";
         ctx.stroke();
       }
     }
@@ -307,16 +341,20 @@ function FloorCanvas({
           ? "#ff8fa3"
           : element.variant === "violet"
             ? "#b994ff"
-            : element.variant === "teal"
-              ? "#7bdff2"
-              : "#ffc247";
+            : element.variant === "teal" || element.variant === "cyan"
+              ? "#65eaff"
+              : element.variant === "emerald"
+                ? "#00f59b"
+                : element.variant === "red"
+                  ? "#ff5e78"
+                  : "#ffc247";
 
       ctx.save();
 
       if (element.kind === "lamp") {
         ctx.globalCompositeOperation = "lighter";
         const glow = ctx.createRadialGradient(point.x, baseY - 34, 4, point.x, baseY - 34, 58);
-        glow.addColorStop(0, "rgba(255, 194, 71, 0.42)");
+        glow.addColorStop(0, "rgba(255, 194, 71, 0.5)");
         glow.addColorStop(1, "rgba(255, 194, 71, 0)");
         ctx.fillStyle = glow;
         ctx.beginPath();
@@ -353,6 +391,136 @@ function FloorCanvas({
         ctx.moveTo(point.x - 7, baseY - 14);
         ctx.quadraticCurveTo(point.x, baseY - 32 + bob, point.x + 8, baseY - 14);
         ctx.stroke();
+      }
+
+      if (element.kind === "tower") {
+        ctx.globalCompositeOperation = "lighter";
+        const glow = ctx.createRadialGradient(point.x, baseY - 56, 4, point.x, baseY - 56, 86);
+        glow.addColorStop(0, "rgba(0, 245, 155, 0.5)");
+        glow.addColorStop(1, "rgba(0, 245, 155, 0)");
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(point.x, baseY - 56, 86, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalCompositeOperation = "source-over";
+        ctx.fillStyle = "#071015";
+        ctx.strokeStyle = "#243943";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.rect(point.x - 20, baseY - 92, 40, 78);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = variantColor;
+        ctx.fillRect(point.x - 13, baseY - 84, 26, 9);
+        ctx.fillRect(point.x - 4, baseY - 70, 8, 45);
+        ctx.strokeStyle = variantColor;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(point.x - 18, baseY - 96, 36, 16);
+      }
+
+      if (element.kind === "ticker") {
+        ctx.save();
+        ctx.translate(point.x, baseY - 40);
+        ctx.fillStyle = "#061016";
+        ctx.strokeStyle = variantColor;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(-42, -38, 84, 48, 4);
+        ctx.fill();
+        ctx.stroke();
+        ctx.globalCompositeOperation = "lighter";
+        ctx.strokeStyle = variantColor;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        for (let i = 0; i < 9; i += 1) {
+          const x = -34 + i * 8;
+          const y = 1 - Math.sin(now / 480 + i + element.gx) * 15 - i * 0.8;
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+        ctx.fillStyle = "rgba(255,255,255,0.18)";
+        for (let i = 0; i < 4; i += 1) {
+          ctx.fillRect(26, -30 + i * 9, 10, 2);
+        }
+        ctx.restore();
+      }
+
+      if (element.kind === "desk") {
+        ctx.fillStyle = "#071017";
+        ctx.strokeStyle = "#24424c";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(point.x - 40, baseY - 6);
+        ctx.lineTo(point.x, baseY - 24);
+        ctx.lineTo(point.x + 42, baseY - 6);
+        ctx.lineTo(point.x + 18, baseY + 10);
+        ctx.lineTo(point.x - 26, baseY + 10);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        ctx.globalCompositeOperation = "lighter";
+        ctx.strokeStyle = variantColor;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(point.x - 24, baseY - 4);
+        ctx.lineTo(point.x + 25, baseY - 4);
+        ctx.stroke();
+        for (let i = 0; i < 3; i += 1) {
+          ctx.fillStyle = i === 1 ? "#ffc247" : variantColor;
+          ctx.fillRect(point.x - 18 + i * 14, baseY - 14 - (i % 2) * 4, 9, 3);
+        }
+        ctx.globalCompositeOperation = "source-over";
+      }
+
+      if (element.kind === "terminal") {
+        ctx.fillStyle = "#050b10";
+        ctx.strokeStyle = variantColor;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(point.x - 31, baseY - 58, 62, 36, 4);
+        ctx.fill();
+        ctx.stroke();
+        ctx.globalCompositeOperation = "lighter";
+        ctx.strokeStyle = variantColor;
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        for (let i = 0; i < 7; i += 1) {
+          const x = point.x - 23 + i * 8;
+          const y = baseY - 36 - Math.cos(now / 420 + i) * 9;
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+        ctx.fillStyle = "rgba(0, 245, 155, 0.22)";
+        ctx.fillRect(point.x - 28, baseY - 54, 56, 4);
+        ctx.globalCompositeOperation = "source-over";
+        ctx.fillStyle = "#071017";
+        ctx.fillRect(point.x - 4, baseY - 22, 8, 24);
+      }
+
+      if (element.kind === "statue") {
+        ctx.globalCompositeOperation = "lighter";
+        ctx.fillStyle = "rgba(0, 245, 155, 0.22)";
+        ctx.beginPath();
+        ctx.ellipse(point.x, baseY - 6, 58, 22, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalCompositeOperation = "source-over";
+        ctx.fillStyle = "#101b1d";
+        ctx.strokeStyle = variantColor;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.ellipse(point.x, baseY - 12, 38, 14, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = variantColor;
+        ctx.beginPath();
+        ctx.moveTo(point.x - 20, baseY - 26);
+        ctx.lineTo(point.x + 12, baseY - 34 + bob);
+        ctx.lineTo(point.x + 28, baseY - 23);
+        ctx.lineTo(point.x + 2, baseY - 18);
+        ctx.closePath();
+        ctx.fill();
       }
 
       if (element.kind === "planter") {
@@ -509,11 +677,20 @@ function FloorCanvas({
       ctx.setTransform(scale, 0, 0, scale, 0, 0);
       ctx.clearRect(0, 0, width, height);
       const backdrop = ctx.createLinearGradient(0, 0, width, height);
-      backdrop.addColorStop(0, "#10161a");
-      backdrop.addColorStop(0.55, "#151a1e");
-      backdrop.addColorStop(1, "#0f1316");
+      backdrop.addColorStop(0, "#020713");
+      backdrop.addColorStop(0.5, "#071117");
+      backdrop.addColorStop(1, "#02050a");
       ctx.fillStyle = backdrop;
       ctx.fillRect(0, 0, width, height);
+
+      ctx.save();
+      const floorGlow = ctx.createRadialGradient(width * 0.42, height * 0.5, 40, width * 0.42, height * 0.5, Math.max(width, height) * 0.62);
+      floorGlow.addColorStop(0, "rgba(0, 245, 155, 0.11)");
+      floorGlow.addColorStop(0.45, "rgba(255, 194, 71, 0.04)");
+      floorGlow.addColorStop(1, "rgba(0, 0, 0, 0)");
+      ctx.fillStyle = floorGlow;
+      ctx.fillRect(0, 0, width, height);
+      ctx.restore();
 
       ctx.save();
       ctx.globalCompositeOperation = "screen";
