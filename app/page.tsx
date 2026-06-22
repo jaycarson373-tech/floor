@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 
-const CA = "Aej6H5m5dmkJFmvDMGexVp6nkb5dBuvFVpFEimgopump";
+const CA = "5bWpvvKw6Bssfa2Ti7j39pqEijWKqMCECVcwfhmrpump";
 
 const HOW_IT_WORKS = [
   {
@@ -170,7 +170,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── Docs Section ─────────────────────────────────────── */}
+      {/* ── Docs Section ───────────────��─────────────────────── */}
       <section id="docs" className="lp-docs" aria-labelledby="docs-heading">
         <div className="lp-section-inner">
           <h2 id="docs-heading" className="lp-section-title">Documentation</h2>
