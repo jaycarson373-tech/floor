@@ -267,10 +267,43 @@ function FloorCanvas({
     function drawTile(gx: number, gy: number, blocked: boolean, now: number) {
       const pulse = Math.sin(now / 650 + gx * 0.45 + gy * 0.3);
       const plaza = gx >= 5 && gx <= 10 && gy >= 4 && gy <= 8;
+      const eastDesk = gx >= 15 && gx <= 21 && gy >= 6 && gy <= 12;
+      const southDesk = gx >= 8 && gx <= 17 && gy >= 14 && gy <= 18;
+      const lane = gx === 11 || gy === 10 || gx + gy === 22 || gx - gy === 4;
       const edge = gx === 0 || gy === 0 || gx === GRID_WIDTH - 1 || gy === GRID_HEIGHT - 1;
       const tapeSide = tapeSideAt(gx, gy);
-      const fill = tapeSide === "up" ? "#0f6b45" : tapeSide === "down" ? "#723246" : blocked ? "#071015" : plaza ? "#172830" : edge ? "#10272b" : "#162b33";
-      const stroke = tapeSide === "up" ? "#00f59b" : tapeSide === "down" ? "#ff6f8b" : blocked ? "#0e1d24" : plaza ? "#2f5964" : edge ? "#00f59b" : "#2d4852";
+      const fill =
+        tapeSide === "up"
+          ? "#0f6b45"
+          : tapeSide === "down"
+            ? "#723246"
+            : blocked
+              ? "#071015"
+              : plaza
+                ? "#172830"
+                : eastDesk
+                  ? "#10292f"
+                  : southDesk
+                    ? "#171f2e"
+                    : lane
+                      ? "#1d3037"
+                      : edge
+                        ? "#10272b"
+                        : "#13252c";
+      const stroke =
+        tapeSide === "up"
+          ? "#00f59b"
+          : tapeSide === "down"
+            ? "#ff6f8b"
+            : blocked
+              ? "#0e1d24"
+              : plaza || eastDesk || southDesk
+                ? "#2f5964"
+                : edge
+                  ? "#00f59b"
+                  : lane
+                    ? "#526875"
+                    : "#2b424b";
 
       drawDiamond(gx, gy, fill, stroke);
 
@@ -304,13 +337,13 @@ function FloorCanvas({
         ctx.fillText(tapeSide.toUpperCase(), point.x, point.y + TILE_HEIGHT / 2);
       }
 
-      if (plaza && !blocked) {
+      if ((plaza || eastDesk || southDesk || lane) && !blocked) {
         const point = gridToScreen(gx, gy);
         ctx.beginPath();
         ctx.moveTo(point.x - TILE_WIDTH / 2 + 10, point.y + TILE_HEIGHT / 2);
         ctx.lineTo(point.x, point.y + TILE_HEIGHT - 10);
         ctx.lineTo(point.x + TILE_WIDTH / 2 - 10, point.y + TILE_HEIGHT / 2);
-        ctx.strokeStyle = `rgba(0, 245, 155, ${0.18 + pulse * 0.04})`;
+        ctx.strokeStyle = lane ? `rgba(255, 194, 71, ${0.16 + pulse * 0.03})` : `rgba(0, 245, 155, ${0.18 + pulse * 0.04})`;
         ctx.stroke();
       }
 
