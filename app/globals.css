@@ -805,6 +805,11 @@ button, input, select { font: inherit; }
   font-size: 13px;
 }
 
+.wallet-actions {
+  display: grid;
+  gap: 10px;
+}
+
 .wallet-gate-card button {
   min-height: 48px;
   border: 0;
@@ -814,6 +819,13 @@ button, input, select { font: inherit; }
   font-weight: 900;
   cursor: pointer;
   box-shadow: 0 0 28px rgba(0,255,157,0.28);
+}
+
+.wallet-gate-card button.wallet-secondary {
+  color: var(--text);
+  border: 1px solid rgba(255,194,71,0.24);
+  background: rgba(255,194,71,0.08);
+  box-shadow: none;
 }
 
 .wallet-gate-card button:disabled {

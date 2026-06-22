@@ -212,12 +212,18 @@ function upsertVisual(previous: VisualPlayer | undefined, player: Player): Visua
   };
 }
 
-function WalletAccess({ onConnect }: { onConnect: () => Promise<void> }) {
+function WalletAccess({
+  onConnect,
+  onSpectate
+}: {
+  onConnect: () => Promise<void>;
+  onSpectate: () => Promise<void>;
+}) {
   const [error, setError] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const [submitting, setSubmitting] = useState<"wallet" | "spectate" | null>(null);
 
   async function connect() {
-    setSubmitting(true);
+    setSubmitting("wallet");
     setError("");
 
     try {
@@ -225,7 +231,20 @@ function WalletAccess({ onConnect }: { onConnect: () => Promise<void> }) {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not connect wallet.");
     } finally {
-      setSubmitting(false);
+      setSubmitting(null);
+    }
+  }
+
+  async function spectate() {
+    setSubmitting("spectate");
+    setError("");
+
+    try {
+      await onSpectate();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not enter spectator mode.");
+    } finally {
+      setSubmitting(null);
     }
   }
 
@@ -245,7 +264,7 @@ function WalletAccess({ onConnect }: { onConnect: () => Promise<void> }) {
           <div className="wallet-orb" aria-hidden="true" />
           <div className="wallet-card-head">
             <span>Player Profile</span>
-            <strong>Wallet required</strong>
+            <strong>Choose access</strong>
           </div>
           <div className="wallet-checks">
             <div>
@@ -261,9 +280,14 @@ function WalletAccess({ onConnect }: { onConnect: () => Promise<void> }) {
               <strong>Sandbox until gated</strong>
             </div>
           </div>
-          <button disabled={submitting} type="button" onClick={connect}>
-            {submitting ? "Connecting..." : "Connect Phantom"}
-          </button>
+          <div className="wallet-actions">
+            <button disabled={submitting !== null} type="button" onClick={connect}>
+              {submitting === "wallet" ? "Connecting..." : "Connect Phantom"}
+            </button>
+            <button className="wallet-secondary" disabled={submitting !== null} type="button" onClick={spectate}>
+              {submitting === "spectate" ? "Entering..." : "Spectate"}
+            </button>
+          </div>
           <div className="wallet-note">
             No token cashout here. Credits are test money; ranked payout eligibility is gated separately.
           </div>
@@ -1320,7 +1344,7 @@ export default function FloorGame() {
       if (!supabase) return;
       const player = await loadPlayer(supabase);
       if (!active || !player) return;
-      if (!player.wallet_address) return;
+      setSessionWalletAddress(player.wallet_address);
       setLocalPlayer(player);
       setPlayers(new Map([[player.id, upsertVisual(undefined, player)]]));
     }
@@ -1402,21 +1426,11 @@ export default function FloorGame() {
     return () => window.clearInterval(heartbeat);
   }, [localPlayer, supabase]);
 
-  const connectWalletAndEnter = useCallback(
-    async () => {
+  const enterPlayer = useCallback(
+    async (displayName: string) => {
       if (!supabase) {
         throw new Error(configError || "Supabase is not configured.");
       }
-
-      const provider = window.solana;
-      if (!provider?.isPhantom) {
-        throw new Error("Install or open Phantom to enter The Floor.");
-      }
-
-      const connection = await provider.connect();
-      const walletAddress = connection.publicKey.toString();
-      const displayName = walletName(walletAddress);
-      setSessionWalletAddress(walletAddress);
 
       const {
         data: { session: existingSession }
@@ -1460,38 +1474,7 @@ export default function FloorGame() {
 
         setLocalPlayer(data);
         setPlayers(new Map([[data.id, upsertVisual(undefined, data)]]));
-        const gateMint = process.env.NEXT_PUBLIC_GATE_MINT ?? "";
-        if (!gateMint) return;
-
-        const message = `The Floor ranked verification\nPlayer: ${session.user.id}\nWallet: ${walletAddress}\nGate mint: ${gateMint}`;
-        const signed = await provider.signMessage(new TextEncoder().encode(message), "utf8");
-        const response = await fetch("/api/wallet/verify", {
-          method: "POST",
-          headers: {
-            "content-type": "application/json",
-            authorization: `Bearer ${session.access_token}`
-          },
-          body: JSON.stringify({
-            walletAddress,
-            message,
-            signature: toBase58(signed.signature)
-          })
-        });
-        const result = (await response.json()) as {
-          player?: Pick<Player, "wallet_address" | "ranked" | "gate_balance" | "ranked_checked_at">;
-          gateBalance?: string;
-        };
-
-        if (response.ok && result.player) {
-          const verifiedPlayer: Player = {
-            ...data,
-            ...result.player,
-            gate_balance: Number(result.gateBalance ?? result.player.gate_balance ?? data.gate_balance ?? 0)
-          };
-          setLocalPlayer(verifiedPlayer);
-          setPlayers(new Map([[verifiedPlayer.id, upsertVisual(undefined, verifiedPlayer)]]));
-        }
-        return;
+        return { player: data, session };
       }
 
       const { data, error } = await supabase
@@ -1513,40 +1496,75 @@ export default function FloorGame() {
 
       setLocalPlayer(data);
       setPlayers(new Map([[data.id, upsertVisual(undefined, data)]]));
+      return { player: data, session };
+    },
+    [configError, supabase]
+  );
 
+  const verifyWalletForPlayer = useCallback(
+    async (player: Player, accessToken: string, walletAddress: string, provider: PhantomProvider) => {
       const gateMint = process.env.NEXT_PUBLIC_GATE_MINT ?? "";
       if (!gateMint) return;
 
-      const message = `The Floor ranked verification\nPlayer: ${session.user.id}\nWallet: ${walletAddress}\nGate mint: ${gateMint}`;
-      const signed = await provider.signMessage(new TextEncoder().encode(message), "utf8");
-      const response = await fetch("/api/wallet/verify", {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-          authorization: `Bearer ${session.access_token}`
-        },
-        body: JSON.stringify({
-          walletAddress,
-          message,
-          signature: toBase58(signed.signature)
-        })
-      });
-      const result = (await response.json()) as {
-        player?: Pick<Player, "wallet_address" | "ranked" | "gate_balance" | "ranked_checked_at">;
-        gateBalance?: string;
-      };
-
-      if (response.ok && result.player) {
-        const verifiedPlayer: Player = {
-          ...data,
-          ...result.player,
-          gate_balance: Number(result.gateBalance ?? result.player.gate_balance ?? data.gate_balance ?? 0)
+      try {
+        const message = `The Floor ranked verification\nPlayer: ${player.id}\nWallet: ${walletAddress}\nGate mint: ${gateMint}`;
+        const signed = await provider.signMessage(new TextEncoder().encode(message), "utf8");
+        const response = await fetch("/api/wallet/verify", {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            authorization: `Bearer ${accessToken}`
+          },
+          body: JSON.stringify({
+            walletAddress,
+            message,
+            signature: toBase58(signed.signature)
+          })
+        });
+        const result = (await response.json()) as {
+          player?: Pick<Player, "wallet_address" | "ranked" | "gate_balance" | "ranked_checked_at">;
+          gateBalance?: string;
         };
-        setLocalPlayer(verifiedPlayer);
-        setPlayers(new Map([[verifiedPlayer.id, upsertVisual(undefined, verifiedPlayer)]]));
+
+        if (response.ok && result.player) {
+          const verifiedPlayer: Player = {
+            ...player,
+            ...result.player,
+            gate_balance: Number(result.gateBalance ?? result.player.gate_balance ?? player.gate_balance ?? 0)
+          };
+          setLocalPlayer(verifiedPlayer);
+          setPlayers(new Map([[verifiedPlayer.id, upsertVisual(undefined, verifiedPlayer)]]));
+        }
+      } catch (error) {
+        console.warn("Wallet verification skipped:", error);
       }
     },
-    [configError, supabase]
+    []
+  );
+
+  const connectWalletAndEnter = useCallback(
+    async () => {
+      const provider = window.solana;
+      if (!provider?.isPhantom) {
+        throw new Error("Phantom is not available. Use Spectate or open this page in Phantom.");
+      }
+
+      const connection = await provider.connect();
+      const walletAddress = connection.publicKey.toString();
+      setSessionWalletAddress(walletAddress);
+
+      const { player, session } = await enterPlayer(walletName(walletAddress));
+      await verifyWalletForPlayer(player, session.access_token, walletAddress, provider);
+    },
+    [enterPlayer, verifyWalletForPlayer]
+  );
+
+  const spectateAndEnter = useCallback(
+    async () => {
+      setSessionWalletAddress(null);
+      await enterPlayer(`Spectator ${Math.floor(1000 + Math.random() * 9000)}`);
+    },
+    [enterPlayer]
   );
 
   const move = useCallback(
@@ -1655,7 +1673,7 @@ export default function FloorGame() {
   }
 
   if (!localPlayer) {
-    return <WalletAccess onConnect={connectWalletAndEnter} />;
+    return <WalletAccess onConnect={connectWalletAndEnter} onSpectate={spectateAndEnter} />;
   }
 
   const onlineCount = Array.from(players.values()).filter((player) => isFresh(player, Date.now())).length;
