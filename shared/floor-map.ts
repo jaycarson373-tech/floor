@@ -127,14 +127,21 @@ export const FLOOR_ELEMENTS: FloorElement[] = [
   { id: "ticker-n1",  kind: "obelisk", gx: 8,  gy: 1,  variant: "teal" },
   { id: "ticker-n2",  kind: "obelisk", gx: 11, gy: 1,  variant: "teal" },
   { id: "ticker-n3",  kind: "obelisk", gx: 14, gy: 1,  variant: "teal" },
+  { id: "pm-desk-n1", kind: "desk",    gx: 9,  gy: 3,  variant: "gold" },
+  { id: "pm-desk-n2", kind: "desk",    gx: 13, gy: 3,  variant: "gold" },
+  { id: "screen-n1",  kind: "screen",  gx: 10, gy: 3,  variant: "teal" },
+  { id: "screen-n2",  kind: "screen",  gx: 12, gy: 3,  variant: "teal" },
 
   // ── South market area ─────────────────────────────────────
   { id: "market-desk-1", kind: "arch",  gx: 7,  gy: 15, variant: "gold" },
   { id: "market-desk-2", kind: "arch",  gx: 9,  gy: 15, variant: "gold" },
   { id: "market-desk-3", kind: "arch",  gx: 13, gy: 15, variant: "gold" },
   { id: "market-desk-4", kind: "arch",  gx: 15, gy: 15, variant: "gold" },
+  { id: "market-desk-5", kind: "desk",  gx: 7,  gy: 17, variant: "gold" },
+  { id: "market-desk-6", kind: "desk",  gx: 15, gy: 17, variant: "gold" },
   { id: "market-screen-1", kind: "crystal", gx: 8,  gy: 15, variant: "teal" },
   { id: "market-screen-2", kind: "crystal", gx: 14, gy: 15, variant: "teal" },
+  { id: "market-screen-3", kind: "screen", gx: 11, gy: 16, variant: "teal" },
   { id: "market-banner",   kind: "banner", gx: 6,  gy: 18, variant: "rose" },
   { id: "market-banner-2", kind: "banner", gx: 16, gy: 18, variant: "teal" },
 

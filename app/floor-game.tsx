@@ -321,6 +321,8 @@ function FloorCanvas({
     function drawTile(gx: number, gy: number, blocked: boolean, now: number) {
       const pulse = Math.sin(now / 650 + gx * 0.45 + gy * 0.3);
       const plaza = gx >= 8 && gx <= 15 && gy >= 6 && gy <= 12;
+      const deskLane = (gx <= 5 && gy >= 5 && gy <= 13) || (gx >= 18 && gy >= 4 && gy <= 12);
+      const marketLane = gy >= 15 && gy <= 18 && gx >= 4 && gx <= 19;
       const edge = gx === 0 || gy === 0 || gx === GRID_WIDTH - 1 || gy === GRID_HEIGHT - 1;
       const tapeSide = tapeSideAt(gx, gy);
 
@@ -329,13 +331,17 @@ function FloorCanvas({
         ? `rgba(0,${60 + Math.round(pulse * 10)},35,0.9)`
         : tapeSide === "down"
           ? `rgba(${80 + Math.round(pulse * 8)},10,30,0.9)`
-          : blocked
-            ? "#0d1520"
-            : plaza
-              ? "#121e30"
-              : edge
-                ? "#0c1824"
-                : "#0f1929";
+            : blocked
+              ? "#0d1520"
+              : plaza
+                ? "#122130"
+                : deskLane
+                  ? "#0e1b23"
+                  : marketLane
+                    ? "#111a2a"
+                    : edge
+                      ? "#07131b"
+                      : "#0a1621";
       const stroke = tapeSide === "up"
         ? `rgba(0,255,157,${0.55 + pulse * 0.18})`
         : tapeSide === "down"
@@ -344,6 +350,10 @@ function FloorCanvas({
             ? "#0a1018"
             : plaza
               ? "rgba(255,194,71,0.18)"
+              : deskLane
+                ? "rgba(0,255,157,0.13)"
+                : marketLane
+                  ? "rgba(116,226,255,0.12)"
               : "rgba(255,255,255,0.08)";
 
       drawDiamond(gx, gy, fill, stroke);
@@ -394,12 +404,262 @@ function FloorCanvas({
         ctx.lineWidth = 1;
         ctx.stroke();
       }
+
+      if ((deskLane || marketLane) && !blocked && !tapeSide) {
+        const point = gridToScreen(gx, gy);
+        ctx.save();
+        ctx.globalCompositeOperation = "screen";
+        ctx.strokeStyle = deskLane ? "rgba(0,255,157,0.16)" : "rgba(101,234,255,0.13)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(point.x - TILE_WIDTH / 2 + 10, point.y + TILE_HEIGHT / 2);
+        ctx.lineTo(point.x + TILE_WIDTH / 2 - 10, point.y + TILE_HEIGHT / 2);
+        ctx.stroke();
+        ctx.restore();
+      }
     }
 
     function drawTileOverlay(point: Point, fillStyle: string, strokeStyle: string) {
       ctx.save();
       ctx.globalCompositeOperation = "screen";
       drawDiamond(point.gx, point.gy, fillStyle, strokeStyle, 5);
+      ctx.restore();
+    }
+
+    function drawMarketScreen(x: number, y: number, width: number, height: number, label: string, color: string, now: number) {
+      ctx.save();
+      ctx.fillStyle = "rgba(3, 9, 15, 0.82)";
+      ctx.strokeStyle = "rgba(0, 255, 157, 0.24)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(x, y, width, height, 4);
+      ctx.fill();
+      ctx.stroke();
+
+      const glass = ctx.createLinearGradient(x, y, x + width, y + height);
+      glass.addColorStop(0, "rgba(0,255,157,0.12)");
+      glass.addColorStop(0.48, "rgba(255,194,71,0.04)");
+      glass.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = glass;
+      ctx.fillRect(x + 1, y + 1, width - 2, height - 2);
+
+      ctx.fillStyle = color;
+      ctx.font = "800 8px Inter, system-ui, sans-serif";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "top";
+      ctx.fillText(label, x + 8, y + 7);
+
+      ctx.strokeStyle = "rgba(255,255,255,0.07)";
+      ctx.lineWidth = 1;
+      for (let i = 0; i < 4; i += 1) {
+        const lineY = y + 22 + i * ((height - 32) / 4);
+        ctx.beginPath();
+        ctx.moveTo(x + 8, lineY);
+        ctx.lineTo(x + width - 8, lineY);
+        ctx.stroke();
+      }
+
+      ctx.strokeStyle = color;
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 8;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let i = 0; i < 20; i += 1) {
+        const px = x + 10 + i * ((width - 20) / 19);
+        const wave = Math.sin(now / 760 + i * 0.7) * 0.5 + Math.cos(now / 1150 + i * 0.32) * 0.5;
+        const py = y + height - 13 - ((wave + 1) / 2) * (height - 36) - (i % 5) * 1.5;
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawOfficeShell(width: number, height: number, now: number) {
+      const top = Math.max(58, height * 0.07);
+      const horizon = Math.max(178, height * 0.31);
+      const center = width * 0.5;
+      const pulse = Math.sin(now / 1200) * 0.5 + 0.5;
+
+      ctx.save();
+
+      const glass = ctx.createLinearGradient(0, top, 0, horizon + 110);
+      glass.addColorStop(0, "rgba(5, 14, 28, 0.92)");
+      glass.addColorStop(0.56, "rgba(3, 9, 17, 0.66)");
+      glass.addColorStop(1, "rgba(0, 0, 0, 0)");
+      ctx.fillStyle = glass;
+      ctx.fillRect(0, top, width, horizon + 112);
+
+      ctx.strokeStyle = "rgba(96, 164, 210, 0.12)";
+      ctx.lineWidth = 1;
+      for (let x = 44; x < width + 80; x += 92) {
+        ctx.beginPath();
+        ctx.moveTo(x, top);
+        ctx.lineTo(x - 34, horizon + 96);
+        ctx.stroke();
+      }
+
+      drawMarketScreen(Math.max(28, center - 470), top + 24, Math.min(285, width * 0.26), 124, "MARKET OVERVIEW", "#00ff9d", now);
+      drawMarketScreen(Math.max(54, center - 148), top + 64, Math.min(176, width * 0.18), 88, "GLOBAL RISK", "#65eaff", now + 700);
+      drawMarketScreen(Math.min(width - 222, center + 80), top + 68, Math.min(200, width * 0.2), 82, "OPTIONS DESK", "#ffc247", now + 1200);
+
+      const officeW = Math.min(360, Math.max(240, width * 0.25));
+      const officeH = 132;
+      const officeX = Math.min(width - officeW - 28, Math.max(center + 210, width - officeW - 72));
+      const officeY = top + 16;
+
+      ctx.fillStyle = "rgba(5, 9, 14, 0.76)";
+      ctx.strokeStyle = "rgba(255, 194, 71, 0.32)";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(officeX, officeY, officeW, officeH, 8);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.strokeStyle = `rgba(255,194,71,${0.4 + pulse * 0.18})`;
+      ctx.shadowColor = "#ffc247";
+      ctx.shadowBlur = 10;
+      ctx.beginPath();
+      ctx.moveTo(officeX + 16, officeY + 18);
+      ctx.lineTo(officeX + officeW - 16, officeY + 18);
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+
+      ctx.fillStyle = "#ffda7a";
+      ctx.font = "900 12px Inter, system-ui, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("BOSS OFFICE", officeX + officeW / 2, officeY + 45);
+      ctx.fillStyle = "rgba(255,255,255,0.16)";
+      for (let i = 0; i < 7; i += 1) {
+        ctx.fillRect(officeX + 24 + i * ((officeW - 70) / 6), officeY + 72 + (i % 2) * 9, 22, 20);
+      }
+
+      ctx.strokeStyle = "rgba(190, 220, 230, 0.14)";
+      ctx.lineWidth = 2;
+      const stairStartY = officeY + officeH - 4;
+      for (const offset of [-44, 44]) {
+        ctx.beginPath();
+        ctx.moveTo(officeX + officeW / 2 + offset, stairStartY);
+        ctx.lineTo(center + offset * 1.6, horizon + 162);
+        ctx.stroke();
+      }
+      ctx.strokeStyle = "rgba(0, 255, 157, 0.26)";
+      for (let i = 0; i < 8; i += 1) {
+        const y = stairStartY + i * 15;
+        ctx.beginPath();
+        ctx.moveTo(officeX + officeW / 2 - 42 - i * 12, y);
+        ctx.lineTo(officeX + officeW / 2 + 42 + i * 12, y);
+        ctx.stroke();
+      }
+
+      ctx.globalCompositeOperation = "lighter";
+      ctx.strokeStyle = `rgba(0,255,157,${0.28 + pulse * 0.1})`;
+      ctx.shadowColor = "#00ff9d";
+      ctx.shadowBlur = 16;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(center - 420, height - 150);
+      ctx.lineTo(center - 154, height - 150);
+      ctx.lineTo(center - 108, height - 122);
+      ctx.lineTo(center + 108, height - 122);
+      ctx.lineTo(center + 154, height - 150);
+      ctx.lineTo(center + 420, height - 150);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawFloorFoundation(now: number) {
+      const top = gridToScreen(0, 0);
+      const right = gridToScreen(GRID_WIDTH - 1, 0);
+      const bottom = gridToScreen(GRID_WIDTH - 1, GRID_HEIGHT - 1);
+      const left = gridToScreen(0, GRID_HEIGHT - 1);
+      const pulse = Math.sin(now / 1100) * 0.5 + 0.5;
+
+      const rim = [
+        { x: top.x, y: top.y - 4 },
+        { x: right.x + TILE_WIDTH / 2 + 18, y: right.y + TILE_HEIGHT / 2 },
+        { x: bottom.x, y: bottom.y + TILE_HEIGHT + 18 },
+        { x: left.x - TILE_WIDTH / 2 - 18, y: left.y + TILE_HEIGHT / 2 }
+      ];
+      const drop = 28;
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(rim[0].x, rim[0].y + drop);
+      ctx.lineTo(rim[1].x, rim[1].y + drop);
+      ctx.lineTo(rim[2].x, rim[2].y + drop);
+      ctx.lineTo(rim[3].x, rim[3].y + drop);
+      ctx.closePath();
+      ctx.fillStyle = "rgba(1, 5, 9, 0.9)";
+      ctx.shadowColor = "rgba(0,0,0,0.8)";
+      ctx.shadowBlur = 36;
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.moveTo(rim[0].x, rim[0].y);
+      ctx.lineTo(rim[1].x, rim[1].y);
+      ctx.lineTo(rim[2].x, rim[2].y);
+      ctx.lineTo(rim[3].x, rim[3].y);
+      ctx.closePath();
+      ctx.fillStyle = "rgba(7, 17, 23, 0.72)";
+      ctx.fill();
+
+      ctx.globalCompositeOperation = "lighter";
+      ctx.strokeStyle = `rgba(0,255,157,${0.42 + pulse * 0.16})`;
+      ctx.shadowColor = "#00ff9d";
+      ctx.shadowBlur = 18;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(rim[0].x, rim[0].y + 4);
+      ctx.lineTo(rim[1].x, rim[1].y + 4);
+      ctx.lineTo(rim[2].x, rim[2].y + 4);
+      ctx.lineTo(rim[3].x, rim[3].y + 4);
+      ctx.closePath();
+      ctx.stroke();
+
+      ctx.strokeStyle = `rgba(255,194,71,${0.32 + pulse * 0.12})`;
+      ctx.shadowColor = "#ffc247";
+      ctx.shadowBlur = 14;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(rim[3].x + 54, rim[3].y + 14);
+      ctx.lineTo(rim[2].x - 60, rim[2].y + 14);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawBrandPlate(width: number, height: number, now: number) {
+      if (width < 760 || height < 620) return;
+      const plateW = Math.min(340, width * 0.34);
+      const plateH = 54;
+      const x = width / 2 - plateW / 2;
+      const y = height - 84;
+      const pulse = Math.sin(now / 900) * 0.5 + 0.5;
+
+      ctx.save();
+      ctx.globalCompositeOperation = "lighter";
+      ctx.strokeStyle = `rgba(0,255,157,${0.48 + pulse * 0.18})`;
+      ctx.shadowColor = "#00ff9d";
+      ctx.shadowBlur = 18;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(x + 34, y);
+      ctx.lineTo(x + plateW - 34, y);
+      ctx.lineTo(x + plateW, y + plateH / 2);
+      ctx.lineTo(x + plateW - 34, y + plateH);
+      ctx.lineTo(x + 34, y + plateH);
+      ctx.lineTo(x, y + plateH / 2);
+      ctx.closePath();
+      ctx.fillStyle = "rgba(2, 16, 18, 0.82)";
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.font = "900 26px Inter, system-ui, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = "#d9fff1";
+      ctx.shadowBlur = 24;
+      ctx.fillText("THE FLOOR", width / 2, y + plateH / 2 + 1);
       ctx.restore();
     }
 
@@ -740,6 +1000,8 @@ function FloorCanvas({
       ctx.fillStyle = floorBg;
       ctx.fillRect(0, height * 0.3, width, height * 0.7);
 
+      drawOfficeShell(width, height, now);
+
       // subtle floor reflections (horizontal shimmers)
       ctx.save();
       ctx.globalAlpha = 0.04;
@@ -770,6 +1032,8 @@ function FloorCanvas({
         ctx.fill();
       }
       ctx.restore();
+
+      drawFloorFoundation(now);
 
       const drawables: Array<{ order: number; draw: () => void }> = [];
 
@@ -829,6 +1093,8 @@ function FloorCanvas({
       for (const drawable of drawables) {
         drawable.draw();
       }
+
+      drawBrandPlate(width, height, now);
 
       frame = requestAnimationFrame(draw);
     }
