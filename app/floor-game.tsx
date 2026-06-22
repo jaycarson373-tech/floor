@@ -1344,6 +1344,7 @@ export default function FloorGame() {
       if (!supabase) return;
       const player = await loadPlayer(supabase);
       if (!active || !player) return;
+      if (!player.wallet_address) return;
       setSessionWalletAddress(player.wallet_address);
       setLocalPlayer(player);
       setPlayers(new Map([[player.id, upsertVisual(undefined, player)]]));
