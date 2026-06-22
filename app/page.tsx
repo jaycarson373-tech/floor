@@ -15,7 +15,7 @@ const HOW_IT_WORKS = [
   {
     step: "02",
     title: "Trade The Tape",
-    body: "Step onto an UP or DOWN pad to call the next move. Win the tape, earn your rank.",
+    body: "Step onto an UP or DOWN pad to call the next move. Win the tape, earn rank, and chase the $FLOOR reward pool.",
   },
   {
     step: "03",
@@ -25,9 +25,27 @@ const HOW_IT_WORKS = [
 ];
 
 const STATS = [
-  { value: "—", label: "traders online" },
-  { value: "SOL", label: "chain" },
+  { value: "0", label: "$FLOOR won" },
+  { value: "0", label: "$FLOOR burned" },
   { value: "LIVE", label: "season 1" },
+];
+
+const REWARD_COUNTERS = [
+  {
+    label: "Total $FLOOR Won",
+    value: "0",
+    detail: "Ranked season rewards"
+  },
+  {
+    label: "Bought Back + Burned",
+    value: "0",
+    detail: "Burn counter"
+  },
+  {
+    label: "Reward Engine",
+    value: "Armed Soon",
+    detail: "Dry-run first, then live"
+  }
 ];
 
 export default function LandingPage() {
@@ -47,6 +65,7 @@ export default function LandingPage() {
         <span className="lp-logo">THE FLOOR</span>
         <nav className="lp-nav-links" aria-label="Primary">
           <a href="#how-it-works">How It Works</a>
+          <a href="#rewards">Rewards</a>
           <a
             href="https://x.com/thefloorsolana"
             target="_blank"
@@ -120,6 +139,29 @@ export default function LandingPage() {
               )}
             </span>
           </button>
+        </div>
+      </section>
+
+      {/* ── Rewards / Burn Loop ───────────────────────────────── */}
+      <section id="rewards" className="lp-rewards" aria-labelledby="rewards-heading">
+        <div className="lp-section-inner">
+          <div className="lp-rewards-head">
+            <span className="lp-rewards-kicker">$FLOOR Loop</span>
+            <h2 id="rewards-heading" className="lp-section-title">Win $FLOOR. Burn $FLOOR.</h2>
+            <p>
+              Ranked seasons are designed around public counters for $FLOOR won by players
+              and $FLOOR bought back + burned by The Floor. Counters start at launch.
+            </p>
+          </div>
+          <div className="lp-reward-grid">
+            {REWARD_COUNTERS.map((counter) => (
+              <div key={counter.label} className="lp-reward-card">
+                <span>{counter.label}</span>
+                <strong>{counter.value}</strong>
+                <small>{counter.detail}</small>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 

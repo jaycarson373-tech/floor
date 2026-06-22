@@ -1428,6 +1428,86 @@ button, input, select { font: inherit; }
 
 .lp-ca:hover .lp-ca-copy { color: var(--neon); }
 
+/* ── Rewards / Burn Loop ───────────────────────────────────── */
+.lp-rewards {
+  padding: 92px 24px 84px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(0,255,157,0.1), transparent 36%),
+    linear-gradient(180deg, var(--navy), #040913);
+  border-top: 1px solid rgba(0,255,157,0.12);
+}
+
+.lp-rewards-head {
+  max-width: 720px;
+  margin: 0 auto 34px;
+  text-align: center;
+}
+
+.lp-rewards-head .lp-section-title {
+  margin-bottom: 14px;
+}
+
+.lp-rewards-head p {
+  margin: 0;
+  color: rgba(232,237,245,0.68);
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.lp-rewards-kicker {
+  display: inline-flex;
+  margin-bottom: 12px;
+  padding: 6px 10px;
+  border: 1px solid rgba(255,194,71,0.28);
+  border-radius: 999px;
+  color: var(--amber);
+  background: rgba(255,194,71,0.08);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.lp-reward-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.lp-reward-card {
+  min-height: 156px;
+  display: grid;
+  align-content: center;
+  gap: 8px;
+  padding: 24px;
+  border: 1px solid rgba(0,255,157,0.16);
+  border-radius: 12px;
+  background:
+    linear-gradient(180deg, rgba(18,26,39,0.82), rgba(5,10,17,0.96));
+  box-shadow: inset 0 0 42px rgba(0,255,157,0.04), 0 18px 42px rgba(0,0,0,0.2);
+}
+
+.lp-reward-card span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.lp-reward-card strong {
+  color: #edfff8;
+  font-family: var(--font-space-grotesk), "Space Grotesk", sans-serif;
+  font-size: clamp(28px, 5vw, 48px);
+  line-height: 1;
+  text-shadow: 0 0 24px rgba(0,255,157,0.26);
+}
+
+.lp-reward-card small {
+  color: rgba(255,194,71,0.78);
+  font-size: 12px;
+}
+
 /* ── How It Works ──────────────────────────────────────────── */
 .lp-how {
   padding: 100px 24px;
@@ -1530,6 +1610,10 @@ button, input, select { font: inherit; }
   }
 
   .lp-steps {
+    grid-template-columns: 1fr;
+  }
+
+  .lp-reward-grid {
     grid-template-columns: 1fr;
   }
 
