@@ -807,7 +807,7 @@ export default function FloorGame() {
       setLocalPlayer(data);
       setPlayers(new Map([[data.id, upsertVisual(undefined, data)]]));
     },
-    [configError, supabase]
+    [supabase]
   );
 
   const move = useCallback(
