@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 
-const CA = "Aej6H5m5dmkJFmvDMGexVp6nkb5dBuvFVpFEimgopump";
+const CA = "5bWpvvKw6Bssfa2Ti7j39pqEijWKqMCECVcwfhmrpump";
 
 const HOW_IT_WORKS = [
   {
