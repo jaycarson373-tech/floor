@@ -77,6 +77,29 @@ button, input, select { font: inherit; }
   font-size: 12px;
 }
 
+.topbar-x-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  letter-spacing: 0.02em;
+  transition: color 0.12s, border-color 0.12s, background 0.12s;
+  white-space: nowrap;
+}
+
+.topbar-x-link:hover {
+  color: var(--text);
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.04);
+}
+
 .hud {
   display: flex;
   align-items: center;
@@ -595,7 +618,7 @@ button, input, select { font: inherit; }
 
 .season-row strong { text-align: right; }
 
-/* ── Entry Screen ───────────────────────────────────────────── */
+/* ── Entry Screen ─────────────���─────────────────────────────── */
 .entry-wrap {
   min-height: 100vh;
   display: grid;
