@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { gridToScreen, screenToGrid, TILE_HEIGHT, TILE_WIDTH } from "@/client/iso";
 import type { Database } from "@/lib/database.types";
-import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { createSupabaseBrowserClient, getSupabaseBrowserConfigError } from "@/lib/supabase/client";
 import CapitalPanel from "./capital-panel";
 import ChatPanel from "./chat-panel";
 import DuelPanel from "./duel-panel";
@@ -881,6 +881,7 @@ export default function FloorGame() {
   const [players, setPlayers] = useState<Map<string, VisualPlayer>>(new Map());
   const [status, setStatus] = useState("Disconnected");
   const [activeTab, setActiveTab] = useState<TabId>("trade");
+  const [configError, setConfigError] = useState("");
 
   const [selectedTile, setSelectedTile] = useState<Point | null>(null);
   const [queuedPath, setQueuedPath] = useState<Point[]>([]);
@@ -892,7 +893,13 @@ export default function FloorGame() {
   }, [localPlayer]);
 
   useEffect(() => {
-    setSupabase(createSupabaseBrowserClient());
+    try {
+      const error = getSupabaseBrowserConfigError();
+      setConfigError(error);
+      setSupabase(error ? null : createSupabaseBrowserClient());
+    } catch (error) {
+      setConfigError(error instanceof Error ? error.message : "Supabase is not configured.");
+    }
   }, []);
 
   const loadPlayer = useCallback(
@@ -1000,7 +1007,7 @@ export default function FloorGame() {
   const join = useCallback(
     async (name: string) => {
       if (!supabase) {
-        throw new Error("Supabase is not configured.");
+        throw new Error(configError || "Supabase is not configured.");
       }
 
       const {
@@ -1068,7 +1075,7 @@ export default function FloorGame() {
       setLocalPlayer(data);
       setPlayers(new Map([[data.id, upsertVisual(undefined, data)]]));
     },
-    [supabase]
+    [configError, supabase]
   );
 
   const move = useCallback(
@@ -1161,6 +1168,20 @@ export default function FloorGame() {
     },
     [supabase]
   );
+
+  if (configError) {
+    return (
+      <main className="entry-wrap">
+        <section className="entry-panel">
+          <h1>The Floor</h1>
+          <p>Add Supabase environment values, then restart the app.</p>
+          <div className="error" role="status">
+            {configError}
+          </div>
+        </section>
+      </main>
+    );
+  }
 
   if (!localPlayer) {
     return <PlayerEntry onJoin={join} />;
