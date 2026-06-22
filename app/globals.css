@@ -1343,6 +1343,90 @@ button, input, select { font: inherit; }
 
 .lp-ca-note a:hover { color: var(--neon); }
 
+/* ── Docs Section ──────────────────────────────────────────── */
+.lp-docs {
+  padding: 100px 24px;
+  background: var(--navy);
+  border-top: 1px solid rgba(0, 255, 157, 0.06);
+}
+
+.lp-docs-sub {
+  font-size: 15px;
+  color: var(--muted);
+  text-align: center;
+  margin: -36px 0 52px;
+  line-height: 1.6;
+  max-width: 560px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.lp-docs-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.lp-doc-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color 0.15s, background 0.15s;
+  cursor: default;
+}
+
+.lp-doc-card:hover {
+  border-color: rgba(0, 255, 157, 0.18);
+  background: var(--panel2);
+}
+
+.lp-doc-card-inner {
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+}
+
+.lp-doc-title {
+  font-family: var(--font-space-grotesk), "Space Grotesk", sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+  letter-spacing: 0.02em;
+}
+
+.lp-doc-desc {
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--muted);
+  margin: 0;
+  flex: 1;
+}
+
+.lp-doc-coming {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 10px;
+  margin-top: 8px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  align-self: flex-start;
+}
+
+@media (max-width: 768px) {
+  .lp-docs-grid { grid-template-columns: 1fr; }
+  .lp-docs-sub { margin-top: -20px; }
+}
+
 /* ── Footer ────────────────────────────────────────────────── */
 .lp-footer {
   padding: 28px 32px;
