@@ -69,12 +69,26 @@ const SPRITE_SIZES: Record<SpriteKey, { dw: number; dh: number; offsetY: number 
 };
 
 type Player = Database["public"]["Tables"]["players"]["Row"];
+type SupabaseBrowserClient = ReturnType<typeof createSupabaseBrowserClient>;
 type Point = { gx: number; gy: number };
 type VisualPlayer = Player & {
   from: Point;
   to: Point;
   movedAt: number;
 };
+
+type PhantomProvider = {
+  isPhantom?: boolean;
+  publicKey?: { toString(): string };
+  connect(): Promise<{ publicKey: { toString(): string } }>;
+  signMessage(message: Uint8Array, encoding: "utf8"): Promise<{ signature: Uint8Array }>;
+};
+
+declare global {
+  interface Window {
+    solana?: PhantomProvider;
+  }
+}
 
 const STALE_AFTER_MS = 30_000;
 const STEP_MS = 220;
@@ -97,6 +111,47 @@ function isFresh(player: Player, now: number) {
 
 function sleep(ms: number) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
+
+function shortAddress(value: string | null | undefined) {
+  if (!value) return "Not connected";
+  return `${value.slice(0, 4)}...${value.slice(-4)}`;
+}
+
+function formatCredits(value: number | null | undefined) {
+  if (typeof value !== "number") return "--";
+  return value.toLocaleString("en-US");
+}
+
+function formatFloorBalance(value: number | null | undefined) {
+  if (typeof value !== "number" || value <= 0) return "0";
+  return value.toLocaleString("en-US");
+}
+
+function walletName(walletAddress: string) {
+  return `Trader ${walletAddress.slice(0, 4).toUpperCase()}`;
+}
+
+function toBase58(bytes: Uint8Array) {
+  const alphabet = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+  let zeros = 0;
+  while (zeros < bytes.length && bytes[zeros] === 0) zeros += 1;
+
+  const digits = [0];
+  for (let i = zeros; i < bytes.length; i += 1) {
+    let carry = bytes[i];
+    for (let j = 0; j < digits.length; j += 1) {
+      const value = digits[j] * 256 + carry;
+      digits[j] = value % 58;
+      carry = Math.floor(value / 58);
+    }
+    while (carry > 0) {
+      digits.push(carry % 58);
+      carry = Math.floor(carry / 58);
+    }
+  }
+
+  return "1".repeat(zeros) + digits.reverse().map((digit) => alphabet[digit]).join("");
 }
 
 function findPath(start: Point, target: Point): Point[] | null {
@@ -157,27 +212,18 @@ function upsertVisual(previous: VisualPlayer | undefined, player: Player): Visua
   };
 }
 
-function PlayerEntry({ onJoin }: { onJoin: (name: string) => Promise<void> }) {
-  const [name, setName] = useState("");
+function WalletAccess({ onConnect }: { onConnect: () => Promise<void> }) {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  async function submit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const trimmed = name.trim();
-
-    if (!trimmed) {
-      setError("Pick a name first.");
-      return;
-    }
-
+  async function connect() {
     setSubmitting(true);
     setError("");
 
     try {
-      await onJoin(trimmed);
+      await onConnect();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not enter the floor.");
+      setError(err instanceof Error ? err.message : "Could not connect wallet.");
     } finally {
       setSubmitting(false);
     }
@@ -185,26 +231,109 @@ function PlayerEntry({ onJoin }: { onJoin: (name: string) => Promise<void> }) {
 
   return (
     <main className="entry-wrap">
-      <section className="entry-panel">
-        <h1>The Floor</h1>
-        <p>Enter a temporary name for this browser session.</p>
-        <form className="entry-form" onSubmit={submit}>
-          <input
-            autoFocus
-            maxLength={32}
-            placeholder="Name"
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-          />
-          <button disabled={submitting} type="submit">
-            {submitting ? "Entering..." : "Enter"}
+      <section className="wallet-gate">
+        <div className="wallet-gate-copy">
+          <span className="wallet-eyebrow">Spectator Access</span>
+          <h1>Connect to enter The Floor</h1>
+          <p>
+            Phantom becomes your floor pass. We create your player profile, grant
+            the 10,000 test Credits, and read your future $FLOOR eligibility server-side.
+          </p>
+        </div>
+
+        <div className="wallet-gate-card">
+          <div className="wallet-orb" aria-hidden="true" />
+          <div className="wallet-card-head">
+            <span>Player Profile</span>
+            <strong>Wallet required</strong>
+          </div>
+          <div className="wallet-checks">
+            <div>
+              <span>Credits Grant</span>
+              <strong>10,000</strong>
+            </div>
+            <div>
+              <span>$FLOOR Holdings</span>
+              <strong>Verified after signature</strong>
+            </div>
+            <div>
+              <span>Mode</span>
+              <strong>Sandbox until gated</strong>
+            </div>
+          </div>
+          <button disabled={submitting} type="button" onClick={connect}>
+            {submitting ? "Connecting..." : "Connect Phantom"}
           </button>
+          <div className="wallet-note">
+            No token cashout here. Credits are test money; ranked payout eligibility is gated separately.
+          </div>
           <div className="error" role="status">
             {error}
           </div>
-        </form>
+        </div>
       </section>
     </main>
+  );
+}
+
+function PlayerProfileCard({
+  player,
+  supabase,
+  sessionWalletAddress
+}: {
+  player: Player;
+  supabase: SupabaseBrowserClient;
+  sessionWalletAddress: string | null;
+}) {
+  const [credits, setCredits] = useState<number | null>(null);
+  const walletAddress = player.wallet_address ?? sessionWalletAddress;
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadCredits() {
+      const { data } = await supabase.from("player_credits").select("credits").eq("player_id", player.id).maybeSingle();
+      if (active) setCredits(typeof data?.credits === "number" ? data.credits : null);
+    }
+
+    loadCredits();
+    const timer = window.setInterval(loadCredits, 5000);
+    return () => {
+      active = false;
+      window.clearInterval(timer);
+    };
+  }, [player.id, supabase]);
+
+  return (
+    <section className="profile-card" aria-label="Player profile">
+      <div className="profile-card-top">
+        <div>
+          <span>Player Profile</span>
+          <strong>{player.name}</strong>
+        </div>
+        <span className={player.ranked ? "profile-badge ranked" : "profile-badge"}>
+          {player.ranked ? "Ranked" : "Sandbox"}
+        </span>
+      </div>
+      <div className="profile-grid">
+        <div>
+          <span>Wallet</span>
+          <strong>{shortAddress(walletAddress)}</strong>
+        </div>
+        <div>
+          <span>Credits</span>
+          <strong>{formatCredits(credits)}</strong>
+        </div>
+        <div>
+          <span>$FLOOR Holdings</span>
+          <strong>{formatFloorBalance(player.gate_balance)}</strong>
+        </div>
+        <div>
+          <span>Status</span>
+          <strong>{player.wallet_address ? "Verified" : walletAddress ? "Connected" : "Spectator"}</strong>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -1138,17 +1267,18 @@ const TABS: { id: TabId; label: string }[] = [
   { id: "trade",     label: "Trade" },
   { id: "tape",      label: "Tape" },
   { id: "season",    label: "Season" },
-  { id: "hierarchy", label: "Rank" },
+  { id: "hierarchy", label: "Profile" },
   { id: "chat",      label: "Chat" }
 ];
 
 export default function FloorGame() {
-  const [supabase, setSupabase] = useState<ReturnType<typeof createSupabaseBrowserClient> | null>(null);
+  const [supabase, setSupabase] = useState<SupabaseBrowserClient | null>(null);
   const [localPlayer, setLocalPlayer] = useState<Player | null>(null);
   const [players, setPlayers] = useState<Map<string, VisualPlayer>>(new Map());
   const [status, setStatus] = useState("Disconnected");
   const [activeTab, setActiveTab] = useState<TabId>("trade");
   const [configError, setConfigError] = useState("");
+  const [sessionWalletAddress, setSessionWalletAddress] = useState<string | null>(null);
 
   const [selectedTile, setSelectedTile] = useState<Point | null>(null);
   const [queuedPath, setQueuedPath] = useState<Point[]>([]);
@@ -1170,7 +1300,7 @@ export default function FloorGame() {
   }, []);
 
   const loadPlayer = useCallback(
-    async (client: ReturnType<typeof createSupabaseBrowserClient>) => {
+    async (client: SupabaseBrowserClient) => {
       const {
         data: { session }
       } = await client.auth.getSession();
@@ -1190,6 +1320,7 @@ export default function FloorGame() {
       if (!supabase) return;
       const player = await loadPlayer(supabase);
       if (!active || !player) return;
+      if (!player.wallet_address) return;
       setLocalPlayer(player);
       setPlayers(new Map([[player.id, upsertVisual(undefined, player)]]));
     }
@@ -1271,11 +1402,21 @@ export default function FloorGame() {
     return () => window.clearInterval(heartbeat);
   }, [localPlayer, supabase]);
 
-  const join = useCallback(
-    async (name: string) => {
+  const connectWalletAndEnter = useCallback(
+    async () => {
       if (!supabase) {
         throw new Error(configError || "Supabase is not configured.");
       }
+
+      const provider = window.solana;
+      if (!provider?.isPhantom) {
+        throw new Error("Install or open Phantom to enter The Floor.");
+      }
+
+      const connection = await provider.connect();
+      const walletAddress = connection.publicKey.toString();
+      const displayName = walletName(walletAddress);
+      setSessionWalletAddress(walletAddress);
 
       const {
         data: { session: existingSession }
@@ -1306,7 +1447,7 @@ export default function FloorGame() {
         const { data, error } = await supabase
           .from("players")
           .update({
-            name,
+            name: displayName,
             last_seen: lastSeen
           })
           .eq("id", session.user.id)
@@ -1319,6 +1460,37 @@ export default function FloorGame() {
 
         setLocalPlayer(data);
         setPlayers(new Map([[data.id, upsertVisual(undefined, data)]]));
+        const gateMint = process.env.NEXT_PUBLIC_GATE_MINT ?? "";
+        if (!gateMint) return;
+
+        const message = `The Floor ranked verification\nPlayer: ${session.user.id}\nWallet: ${walletAddress}\nGate mint: ${gateMint}`;
+        const signed = await provider.signMessage(new TextEncoder().encode(message), "utf8");
+        const response = await fetch("/api/wallet/verify", {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            authorization: `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify({
+            walletAddress,
+            message,
+            signature: toBase58(signed.signature)
+          })
+        });
+        const result = (await response.json()) as {
+          player?: Pick<Player, "wallet_address" | "ranked" | "gate_balance" | "ranked_checked_at">;
+          gateBalance?: string;
+        };
+
+        if (response.ok && result.player) {
+          const verifiedPlayer: Player = {
+            ...data,
+            ...result.player,
+            gate_balance: Number(result.gateBalance ?? result.player.gate_balance ?? data.gate_balance ?? 0)
+          };
+          setLocalPlayer(verifiedPlayer);
+          setPlayers(new Map([[verifiedPlayer.id, upsertVisual(undefined, verifiedPlayer)]]));
+        }
         return;
       }
 
@@ -1326,7 +1498,7 @@ export default function FloorGame() {
         .from("players")
         .insert({
           id: session.user.id,
-          name,
+          name: displayName,
           gx: spawn.gx,
           gy: spawn.gy,
           facing: "south",
@@ -1341,6 +1513,38 @@ export default function FloorGame() {
 
       setLocalPlayer(data);
       setPlayers(new Map([[data.id, upsertVisual(undefined, data)]]));
+
+      const gateMint = process.env.NEXT_PUBLIC_GATE_MINT ?? "";
+      if (!gateMint) return;
+
+      const message = `The Floor ranked verification\nPlayer: ${session.user.id}\nWallet: ${walletAddress}\nGate mint: ${gateMint}`;
+      const signed = await provider.signMessage(new TextEncoder().encode(message), "utf8");
+      const response = await fetch("/api/wallet/verify", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          authorization: `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({
+          walletAddress,
+          message,
+          signature: toBase58(signed.signature)
+        })
+      });
+      const result = (await response.json()) as {
+        player?: Pick<Player, "wallet_address" | "ranked" | "gate_balance" | "ranked_checked_at">;
+        gateBalance?: string;
+      };
+
+      if (response.ok && result.player) {
+        const verifiedPlayer: Player = {
+          ...data,
+          ...result.player,
+          gate_balance: Number(result.gateBalance ?? result.player.gate_balance ?? data.gate_balance ?? 0)
+        };
+        setLocalPlayer(verifiedPlayer);
+        setPlayers(new Map([[verifiedPlayer.id, upsertVisual(undefined, verifiedPlayer)]]));
+      }
     },
     [configError, supabase]
   );
@@ -1451,7 +1655,7 @@ export default function FloorGame() {
   }
 
   if (!localPlayer) {
-    return <PlayerEntry onJoin={join} />;
+    return <WalletAccess onConnect={connectWalletAndEnter} />;
   }
 
   const onlineCount = Array.from(players.values()).filter((player) => isFresh(player, Date.now())).length;
@@ -1461,7 +1665,7 @@ export default function FloorGame() {
       <header className="topbar">
         <div className="brand">
           <strong>The Floor</strong>
-          <span className="brand-sub">{localPlayer.name}</span>
+          <span className="brand-sub">{shortAddress(localPlayer.wallet_address ?? sessionWalletAddress)}</span>
         </div>
         <div className="hud">
           <div className="hud-chip">
@@ -1502,6 +1706,11 @@ export default function FloorGame() {
         </section>
         {supabase ? (
           <div className="side-panels">
+            <PlayerProfileCard
+              player={localPlayer}
+              supabase={supabase}
+              sessionWalletAddress={sessionWalletAddress}
+            />
             <nav className="panel-tabs" role="tablist" aria-label="Panel sections">
               {TABS.map((tab) => (
                 <button
