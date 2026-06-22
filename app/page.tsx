@@ -47,6 +47,7 @@ export default function LandingPage() {
         <span className="lp-logo">THE FLOOR</span>
         <nav className="lp-nav-links" aria-label="Primary">
           <a href="#how-it-works">How It Works</a>
+          <a href="#contract">CA</a>
           <a
             href="https://x.com/thefloorsolana"
             target="_blank"
@@ -136,6 +137,35 @@ export default function LandingPage() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ── CA Section ───────────────────────────────────────── */}
+      <section id="contract" className="lp-ca-section" aria-labelledby="ca-heading">
+        <div className="lp-section-inner lp-ca-section-inner">
+          <h2 id="ca-heading" className="lp-section-title">Contract Address</h2>
+          <p className="lp-ca-section-sub">
+            The Floor token is live on Solana. Copy the contract address below.
+          </p>
+          <button className="lp-ca-block" onClick={copyCA} aria-label="Copy contract address">
+            <span className="lp-ca-block-label">CA</span>
+            <span className="lp-ca-block-addr">{CA}</span>
+            <span className="lp-ca-block-copy" aria-live="polite">
+              {copied ? (
+                <span className="lp-ca-copied">Copied!</span>
+              ) : (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <rect x="9" y="9" width="13" height="13" rx="2" />
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                </svg>
+              )}
+            </span>
+          </button>
+          <p className="lp-ca-note">
+            Always verify the CA via{" "}
+            <a href="https://x.com/thefloorsolana" target="_blank" rel="noopener noreferrer">@thefloorsolana</a>{" "}
+            before buying.
+          </p>
         </div>
       </section>
 
