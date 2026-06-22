@@ -1,10 +1,11 @@
 "use client";
-// updated
+
 import { useCallback, useEffect, useRef, useState } from "react";
 import { gridToScreen, screenToGrid, TILE_HEIGHT, TILE_WIDTH } from "@/client/iso";
 import type { Database } from "@/lib/database.types";
 import { createSupabaseBrowserClient, getSupabaseBrowserConfigError } from "@/lib/supabase/client";
 import CapitalPanel from "./capital-panel";
+import ChatPanel from "./chat-panel";
 import DuelPanel from "./duel-panel";
 import SeasonPanel from "./season-panel";
 import TapePanel from "./tape-panel";
@@ -20,6 +21,52 @@ import {
   nearestSpawn,
   tapeSideAt
 } from "@/shared/floor-map";
+
+// ── Sprite sheet layout ───────────────────────────────────────
+// The sheet is 1280×800 with items arranged in two rows.
+// Measurements are approximate pixel crops from the source PNG.
+// Row 1 (y≈0..395): desk | ticker-tower | corner-tower
+// Row 2 (y≈395..800): candlestick-screen | bull | lamp | up-pad | down-pad | trader
+const SPRITE_SRC = "/sprites.png";
+
+type SpriteKey =
+  | "desk"
+  | "ticker-tower"
+  | "corner-tower"
+  | "candlestick-screen"
+  | "bull"
+  | "lamp"
+  | "pad-up"
+  | "pad-down"
+  | "trader";
+
+type SpriteRect = { sx: number; sy: number; sw: number; sh: number };
+
+// Crop rects tuned to the reference sprite sheet (1280×800)
+const SPRITES: Record<SpriteKey, SpriteRect> = {
+  "desk":               { sx: 0,    sy: 0,   sw: 430, sh: 395 },
+  "ticker-tower":       { sx: 430,  sy: 0,   sw: 290, sh: 395 },
+  "corner-tower":       { sx: 900,  sy: 0,   sw: 380, sh: 395 },
+  "candlestick-screen": { sx: 0,    sy: 395, sw: 280, sh: 405 },
+  "bull":               { sx: 290,  sy: 395, sw: 340, sh: 405 },
+  "lamp":               { sx: 730,  sy: 395, sw: 240, sh: 405 },
+  "pad-up":             { sx: 130,  sy: 640, sw: 210, sh: 160 },
+  "pad-down":           { sx: 530,  sy: 640, sw: 210, sh: 160 },
+  "trader":             { sx: 980,  sy: 395, sw: 300, sh: 405 },
+};
+
+// Render sizes on the iso grid (dest width/height in CSS pixels)
+const SPRITE_SIZES: Record<SpriteKey, { dw: number; dh: number; offsetY: number }> = {
+  "desk":               { dw: 140, dh: 120, offsetY: -90 },
+  "ticker-tower":       { dw: 72,  dh: 140, offsetY: -130 },
+  "corner-tower":       { dw: 80,  dh: 150, offsetY: -138 },
+  "candlestick-screen": { dw: 90,  dh: 90,  offsetY: -78 },
+  "bull":               { dw: 120, dh: 120, offsetY: -108 },
+  "lamp":               { dw: 56,  dh: 80,  offsetY: -68 },
+  "pad-up":             { dw: 96,  dh: 56,  offsetY: -30 },
+  "pad-down":           { dw: 96,  dh: 56,  offsetY: -30 },
+  "trader":             { dw: 52,  dh: 90,  offsetY: -80 },
+};
 
 type Player = Database["public"]["Tables"]["players"]["Row"];
 type Point = { gx: number; gy: number };
@@ -181,6 +228,15 @@ function FloorCanvas({
   const hoverRef = useRef<Point | null>(null);
   const pathRef = useRef<Point[]>(queuedPath);
   const selectedRef = useRef<Point | null>(selectedTile);
+  const spriteImgRef = useRef<HTMLImageElement | null>(null);
+
+  // Preload sprite sheet once
+  useEffect(() => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.src = SPRITE_SRC;
+    img.onload = () => { spriteImgRef.current = img; };
+  }, []);
 
   useEffect(() => {
     playerRef.current = players;
@@ -229,6 +285,24 @@ function FloorCanvas({
     if (!context) return;
     const ctx = context;
 
+    function drawSprite(key: SpriteKey, cx: number, baseY: number, glowColor?: string) {
+      const img = spriteImgRef.current;
+      if (!img) return;
+      const { sx, sy, sw, sh } = SPRITES[key];
+      const { dw, dh, offsetY } = SPRITE_SIZES[key];
+      const dx = cx - dw / 2;
+      const dy = baseY + offsetY;
+      if (glowColor) {
+        ctx.save();
+        ctx.shadowColor = glowColor;
+        ctx.shadowBlur = 22;
+        ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
+        ctx.restore();
+      } else {
+        ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
+      }
+    }
+
     function drawDiamond(gx: number, gy: number, fillStyle: string, strokeStyle: string, inset = 0) {
       const point = gridToScreen(gx, gy);
       ctx.beginPath();
@@ -246,7 +320,7 @@ function FloorCanvas({
 
     function drawTile(gx: number, gy: number, blocked: boolean, now: number) {
       const pulse = Math.sin(now / 650 + gx * 0.45 + gy * 0.3);
-      const plaza = gx >= 5 && gx <= 10 && gy >= 4 && gy <= 8;
+      const plaza = gx >= 8 && gx <= 15 && gy >= 6 && gy <= 12;
       const edge = gx === 0 || gy === 0 || gx === GRID_WIDTH - 1 || gy === GRID_HEIGHT - 1;
       const tapeSide = tapeSideAt(gx, gy);
 
@@ -295,26 +369,19 @@ function FloorCanvas({
 
       if (tapeSide && !blocked) {
         const point = gridToScreen(gx, gy);
+        // Neon glow under pad
         ctx.save();
         ctx.globalCompositeOperation = "lighter";
-        ctx.fillStyle = tapeSide === "up"
-          ? `rgba(0,255,157,${0.18 + pulse * 0.08})`
-          : `rgba(255,77,109,${0.18 + pulse * 0.08})`;
+        const padColor = tapeSide === "up" ? "rgba(0,255,157,0.22)" : "rgba(255,77,109,0.22)";
+        ctx.fillStyle = padColor;
         ctx.beginPath();
-        ctx.ellipse(point.x, point.y + TILE_HEIGHT / 2, 32, 12, 0, 0, Math.PI * 2);
+        ctx.ellipse(point.x, point.y + TILE_HEIGHT / 2, 38, 14, 0, 0, Math.PI * 2);
         ctx.fill();
-        // neon stroke glow
-        ctx.strokeStyle = tapeSide === "up" ? "rgba(0,255,157,0.6)" : "rgba(255,77,109,0.6)";
-        ctx.lineWidth = 1.5;
-        ctx.shadowColor = tapeSide === "up" ? "#00ff9d" : "#ff4d6d";
-        ctx.shadowBlur = 10;
-        drawDiamond(gx, gy, "transparent", tapeSide === "up" ? "rgba(0,255,157,0.5)" : "rgba(255,77,109,0.5)", 2);
+        ctx.globalCompositeOperation = "source-over";
+        // Pad sprite centered on tile
+        const padKey: SpriteKey = tapeSide === "up" ? "pad-up" : "pad-down";
+        drawSprite(padKey, point.x, point.y + TILE_HEIGHT / 2 - 4, tapeSide === "up" ? "#00ff9d" : "#ff4d6d");
         ctx.restore();
-        ctx.fillStyle = tapeSide === "up" ? "#00ff9d" : "#ff4d6d";
-        ctx.font = "800 10px Inter, system-ui, sans-serif";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(tapeSide.toUpperCase(), point.x, point.y + TILE_HEIGHT / 2);
       }
 
       if (plaza && !blocked) {
@@ -351,33 +418,121 @@ function FloorCanvas({
 
       ctx.save();
 
+      // ── Sprite-mapped kinds ──────────────────────────────────
       if (element.kind === "lamp") {
+        // Ambient glow underneath sprite
         ctx.globalCompositeOperation = "lighter";
-        const glowA = variantColor === "#ffc247" ? "rgba(255,194,71,0.38)" : variantColor === "#00ff9d" ? "rgba(0,255,157,0.38)" : variantColor === "#ff4d6d" ? "rgba(255,77,109,0.32)" : "rgba(166,77,255,0.32)";
-        const glowB = variantColor === "#ffc247" ? "rgba(255,194,71,0)" : variantColor === "#00ff9d" ? "rgba(0,255,157,0)" : variantColor === "#ff4d6d" ? "rgba(255,77,109,0)" : "rgba(166,77,255,0)";
-        const glow = ctx.createRadialGradient(point.x, baseY - 34, 4, point.x, baseY - 34, 60);
+        const glowA = `rgba(255,194,71,0.3)`;
+        const glowB = `rgba(255,194,71,0)`;
+        const glow = ctx.createRadialGradient(point.x, baseY - 10, 4, point.x, baseY - 10, 52);
         glow.addColorStop(0, glowA);
         glow.addColorStop(1, glowB);
         ctx.fillStyle = glow;
         ctx.beginPath();
-        ctx.arc(point.x, baseY - 34, 60, 0, Math.PI * 2);
+        ctx.arc(point.x, baseY - 10, 52, 0, Math.PI * 2);
         ctx.fill();
         ctx.globalCompositeOperation = "source-over";
-        ctx.strokeStyle = "#080c16";
-        ctx.lineWidth = 5;
-        ctx.beginPath();
-        ctx.moveTo(point.x, baseY - 4);
-        ctx.lineTo(point.x, baseY - 42);
-        ctx.stroke();
-        ctx.fillStyle = variantColor;
-        ctx.shadowColor = variantColor;
-        ctx.shadowBlur = 14;
-        ctx.beginPath();
-        ctx.arc(point.x, baseY - 47, 8, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.shadowBlur = 0;
+        drawSprite("lamp", point.x, baseY, "#ffc247");
+        ctx.restore();
+        return;
       }
 
+      if (element.kind === "obelisk") {
+        // Use corner-tower sprite for obelisks (ticker walls in east district)
+        const spriteKey: SpriteKey = element.id.includes("north") ? "corner-tower" : "ticker-tower";
+        // Glow halo
+        ctx.globalCompositeOperation = "lighter";
+        const g = ctx.createRadialGradient(point.x, baseY - 40, 8, point.x, baseY - 40, 60);
+        g.addColorStop(0, `rgba(0,255,157,0.22)`);
+        g.addColorStop(1, `rgba(0,255,157,0)`);
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(point.x, baseY - 40, 60, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalCompositeOperation = "source-over";
+        drawSprite(spriteKey, point.x, baseY, "#00ff9d");
+        ctx.restore();
+        return;
+      }
+
+      if (element.kind === "crystal") {
+        // Use candlestick-screen sprite for crystals (terminal screens)
+        ctx.globalCompositeOperation = "lighter";
+        const g = ctx.createRadialGradient(point.x, baseY - 30, 4, point.x, baseY - 30, 48);
+        g.addColorStop(0, `rgba(0,255,157,0.18)`);
+        g.addColorStop(1, `rgba(0,255,157,0)`);
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(point.x, baseY - 30, 48, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalCompositeOperation = "source-over";
+        drawSprite("candlestick-screen", point.x, baseY, "#00ff9d");
+        ctx.restore();
+        return;
+      }
+
+      if (element.kind === "arch" || element.kind === "desk") {
+        // Trading desk sprite
+        ctx.globalCompositeOperation = "lighter";
+        const g = ctx.createRadialGradient(point.x, baseY - 20, 4, point.x, baseY - 20, 70);
+        g.addColorStop(0, `rgba(0,255,157,0.14)`);
+        g.addColorStop(1, `rgba(0,255,157,0)`);
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(point.x, baseY - 20, 70, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalCompositeOperation = "source-over";
+        drawSprite("desk", point.x, baseY);
+        ctx.restore();
+        return;
+      }
+
+      if (element.kind === "ticker") {
+        ctx.globalCompositeOperation = "lighter";
+        const g = ctx.createRadialGradient(point.x, baseY - 50, 8, point.x, baseY - 50, 65);
+        g.addColorStop(0, `rgba(0,255,157,0.25)`);
+        g.addColorStop(1, `rgba(0,255,157,0)`);
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(point.x, baseY - 50, 65, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalCompositeOperation = "source-over";
+        drawSprite("ticker-tower", point.x, baseY, "#00ff9d");
+        ctx.restore();
+        return;
+      }
+
+      if (element.kind === "tower") {
+        ctx.globalCompositeOperation = "lighter";
+        const g = ctx.createRadialGradient(point.x, baseY - 55, 8, point.x, baseY - 55, 65);
+        g.addColorStop(0, `rgba(0,255,157,0.28)`);
+        g.addColorStop(1, `rgba(0,255,157,0)`);
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(point.x, baseY - 55, 65, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalCompositeOperation = "source-over";
+        drawSprite("corner-tower", point.x, baseY, "#00ff9d");
+        ctx.restore();
+        return;
+      }
+
+      if (element.kind === "screen") {
+        ctx.globalCompositeOperation = "lighter";
+        const g = ctx.createRadialGradient(point.x, baseY - 30, 4, point.x, baseY - 30, 44);
+        g.addColorStop(0, `rgba(0,255,157,0.2)`);
+        g.addColorStop(1, `rgba(0,255,157,0)`);
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(point.x, baseY - 30, 44, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalCompositeOperation = "source-over";
+        drawSprite("candlestick-screen", point.x, baseY, "#00ff9d");
+        ctx.restore();
+        return;
+      }
+
+      // ── Remaining primitive kinds ────────────────────────────
       if (element.kind === "fountain") {
         ctx.fillStyle = "#29343c";
         ctx.beginPath();
@@ -410,26 +565,6 @@ function FloorCanvas({
           ctx.ellipse(point.x + offset, baseY - 11 - Math.abs(offset) / 4, 5, 14, offset / 20, 0, Math.PI * 2);
           ctx.fill();
         }
-      }
-
-      if (element.kind === "crystal") {
-        ctx.globalCompositeOperation = "lighter";
-        ctx.fillStyle = "rgba(185, 148, 255, 0.18)";
-        ctx.beginPath();
-        ctx.arc(point.x, baseY - 22, 34, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.globalCompositeOperation = "source-over";
-        ctx.fillStyle = variantColor;
-        ctx.strokeStyle = "#211b31";
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(point.x, baseY - 58 + bob);
-        ctx.lineTo(point.x + 15, baseY - 25);
-        ctx.lineTo(point.x + 5, baseY - 6);
-        ctx.lineTo(point.x - 13, baseY - 20);
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
       }
 
       if (element.kind === "crate") {
@@ -465,38 +600,6 @@ function FloorCanvas({
         ctx.fill();
       }
 
-      if (element.kind === "obelisk") {
-        ctx.fillStyle = "#252836";
-        ctx.strokeStyle = variantColor;
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(point.x, baseY - 78);
-        ctx.lineTo(point.x + 18, baseY - 16);
-        ctx.lineTo(point.x, baseY - 4);
-        ctx.lineTo(point.x - 18, baseY - 16);
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-        ctx.fillStyle = variantColor;
-        ctx.beginPath();
-        ctx.arc(point.x, baseY - 42 + bob, 5, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
-      if (element.kind === "arch") {
-        ctx.strokeStyle = "#1c2228";
-        ctx.lineWidth = 10;
-        ctx.beginPath();
-        ctx.moveTo(point.x - 22, baseY);
-        ctx.lineTo(point.x - 22, baseY - 44);
-        ctx.quadraticCurveTo(point.x, baseY - 72, point.x + 22, baseY - 44);
-        ctx.lineTo(point.x + 22, baseY);
-        ctx.stroke();
-        ctx.strokeStyle = variantColor;
-        ctx.lineWidth = 3;
-        ctx.stroke();
-      }
-
       ctx.restore();
     }
 
@@ -506,144 +609,75 @@ function FloorCanvas({
       const gy = player.from.gy + (player.to.gy - player.from.gy) * progress;
       const point = gridToScreen(gx, gy);
       const baseY = point.y + TILE_HEIGHT / 2;
-      const stride = Math.sin(now / 90) * (progress < 1 ? 3 : 1);
-      const playerColor = isLocal ? "#00ff9d" : "#7bdff2";
-      const bodyColor = isLocal ? "#003320" : "#0a2632";
 
       ctx.save();
 
-      // shadow / ground ring
+      // Shadow ellipse
       ctx.beginPath();
-      ctx.ellipse(point.x, baseY + 9, 20, 7, 0, 0, Math.PI * 2);
-      ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+      ctx.ellipse(point.x, baseY + 8, 18, 6, 0, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(0,0,0,0.5)";
       ctx.fill();
 
-      // glow halo for local player
+      // Glow halo for local player
       if (isLocal) {
         ctx.globalCompositeOperation = "lighter";
-        const halo = ctx.createRadialGradient(point.x, baseY - 20 + stride, 4, point.x, baseY - 20 + stride, 28);
-        halo.addColorStop(0, "rgba(0,255,157,0.28)");
+        const halo = ctx.createRadialGradient(point.x, baseY - 24, 4, point.x, baseY - 24, 36);
+        halo.addColorStop(0, "rgba(0,255,157,0.32)");
         halo.addColorStop(1, "rgba(0,255,157,0)");
         ctx.fillStyle = halo;
         ctx.beginPath();
-        ctx.arc(point.x, baseY - 20 + stride, 28, 0, Math.PI * 2);
+        ctx.arc(point.x, baseY - 24, 36, 0, Math.PI * 2);
         ctx.fill();
         ctx.globalCompositeOperation = "source-over";
       }
 
-      // head
-      ctx.beginPath();
-      ctx.arc(point.x, baseY - 20 + stride, 12, 0, Math.PI * 2);
-      ctx.fillStyle = playerColor;
-      ctx.fill();
-      ctx.strokeStyle = "#050810";
-      ctx.lineWidth = 2.5;
-      ctx.stroke();
+      // Trader sprite
+      drawSprite("trader", point.x, baseY, isLocal ? "#00ff9d" : undefined);
 
-      // body
-      ctx.fillStyle = bodyColor;
-      ctx.beginPath();
-      ctx.ellipse(point.x, baseY - 4, 9, 14, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      // name tag
-      ctx.shadowColor = isLocal ? "rgba(0,255,157,0.6)" : "rgba(0,0,0,0.8)";
-      ctx.shadowBlur = isLocal ? 8 : 4;
+      // Name tag above sprite
+      ctx.shadowColor = isLocal ? "rgba(0,255,157,0.7)" : "rgba(0,0,0,0.9)";
+      ctx.shadowBlur = isLocal ? 10 : 5;
       ctx.fillStyle = isLocal ? "#00ff9d" : "#c8e8f0";
       ctx.font = `${isLocal ? "700" : "600"} 11px Inter, system-ui, sans-serif`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillText(player.name.slice(0, 14), point.x, baseY - 43);
+      ctx.fillText(player.name.slice(0, 14), point.x, baseY - 98);
 
       ctx.restore();
     }
 
-    // ── draw bull statue at central plaza ───────────────────
+    // ── draw bull statue at central plaza (sprite) ──────────
     function drawBull(now: number) {
-      const plazaCenterGx = 7.5;
-      const plazaCenterGy = 6;
+      const plazaCenterGx = 12;
+      const plazaCenterGy = 8;
       const point = gridToScreen(plazaCenterGx, plazaCenterGy);
       const baseY = point.y + TILE_HEIGHT / 2 - 8;
       const pulse = Math.sin(now / 700) * 0.5 + 0.5;
 
       ctx.save();
-      // glow platform
+      // Outer platform glow
       ctx.globalCompositeOperation = "lighter";
-      const platformGlow = ctx.createRadialGradient(point.x, baseY + 4, 4, point.x, baseY + 4, 60);
-      platformGlow.addColorStop(0, `rgba(0,255,157,${0.22 + pulse * 0.1})`);
+      const platformGlow = ctx.createRadialGradient(point.x, baseY + 4, 6, point.x, baseY + 4, 80);
+      platformGlow.addColorStop(0, `rgba(0,255,157,${0.28 + pulse * 0.12})`);
       platformGlow.addColorStop(1, "rgba(0,255,157,0)");
       ctx.fillStyle = platformGlow;
       ctx.beginPath();
-      ctx.ellipse(point.x, baseY + 4, 60, 22, 0, 0, Math.PI * 2);
+      ctx.ellipse(point.x, baseY + 4, 80, 30, 0, 0, Math.PI * 2);
       ctx.fill();
       ctx.globalCompositeOperation = "source-over";
 
-      // circular platform base
-      ctx.strokeStyle = `rgba(0,255,157,${0.5 + pulse * 0.25})`;
-      ctx.lineWidth = 2;
-      ctx.fillStyle = "rgba(0,40,25,0.7)";
-      ctx.beginPath();
-      ctx.ellipse(point.x, baseY + 6, 38, 14, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-
-      // body
-      ctx.fillStyle = "#c8a86e";
-      ctx.strokeStyle = "#2a1e0a";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.ellipse(point.x - 2, baseY - 16, 20, 13, -0.15, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-
-      // head
-      ctx.beginPath();
-      ctx.ellipse(point.x + 16, baseY - 22, 11, 9, 0.3, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-
-      // horns
-      ctx.strokeStyle = "#e0c88a";
-      ctx.lineWidth = 3;
-      ctx.lineCap = "round";
-      ctx.beginPath();
-      ctx.moveTo(point.x + 20, baseY - 28);
-      ctx.quadraticCurveTo(point.x + 32, baseY - 44, point.x + 26, baseY - 50);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(point.x + 24, baseY - 26);
-      ctx.quadraticCurveTo(point.x + 36, baseY - 38, point.x + 32, baseY - 43);
-      ctx.stroke();
-
-      // legs
-      ctx.strokeStyle = "#b09060";
-      ctx.lineWidth = 5;
-      ctx.beginPath();
-      ctx.moveTo(point.x - 14, baseY - 4);
-      ctx.lineTo(point.x - 16, baseY + 6);
-      ctx.moveTo(point.x - 4, baseY - 3);
-      ctx.lineTo(point.x - 5, baseY + 6);
-      ctx.moveTo(point.x + 8, baseY - 3);
-      ctx.lineTo(point.x + 8, baseY + 6);
-      ctx.moveTo(point.x + 18, baseY - 5);
-      ctx.lineTo(point.x + 20, baseY + 5);
-      ctx.stroke();
-
-      // tail
-      ctx.strokeStyle = "#c8a86e";
+      // Platform ring
+      ctx.strokeStyle = `rgba(0,255,157,${0.55 + pulse * 0.3})`;
       ctx.lineWidth = 2.5;
+      ctx.fillStyle = "rgba(0,35,20,0.75)";
       ctx.beginPath();
-      ctx.moveTo(point.x - 20, baseY - 14);
-      ctx.quadraticCurveTo(point.x - 34, baseY - 8, point.x - 30, baseY);
+      ctx.ellipse(point.x, baseY + 6, 52, 18, 0, 0, Math.PI * 2);
+      ctx.fill();
       ctx.stroke();
 
-      // neon outline glow
-      ctx.globalCompositeOperation = "lighter";
-      ctx.strokeStyle = `rgba(0,255,157,${0.25 + pulse * 0.12})`;
-      ctx.lineWidth = 5;
-      ctx.beginPath();
-      ctx.ellipse(point.x - 2, baseY - 16, 21, 14, -0.15, 0, Math.PI * 2);
-      ctx.stroke();
+      // Bull sprite on top
+      ctx.globalCompositeOperation = "source-over";
+      drawSprite("bull", point.x, baseY, "#00ff9d");
       ctx.restore();
     }
 
@@ -777,9 +811,9 @@ function FloorCanvas({
         });
       }
 
-      // bull statue in center of plaza
+      // bull statue — center of expanded plaza
       drawables.push({
-        order: 7.5 + 6 + 0.45,
+        order: 12 + 8 + 0.45,
         draw: () => drawBull(now)
       });
 
@@ -831,13 +865,14 @@ function FloorCanvas({
   );
 }
 
-type TabId = "trade" | "tape" | "season" | "hierarchy";
+type TabId = "trade" | "tape" | "season" | "hierarchy" | "chat";
 
 const TABS: { id: TabId; label: string }[] = [
   { id: "trade",     label: "Trade" },
-  { id: "tape",      label: "The Tape" },
+  { id: "tape",      label: "Tape" },
   { id: "season",    label: "Season" },
-  { id: "hierarchy", label: "Hierarchy" }
+  { id: "hierarchy", label: "Rank" },
+  { id: "chat",      label: "Chat" }
 ];
 
 export default function FloorGame() {
@@ -1229,6 +1264,9 @@ export default function FloorGame() {
                   />
                   <CapitalPanel localPlayerId={localPlayer.id} supabase={supabase} />
                 </>
+              )}
+              {activeTab === "chat" && (
+                <ChatPanel supabase={supabase} playerName={localPlayer.name} />
               )}
             </div>
           </div>
