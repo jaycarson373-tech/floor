@@ -1,7 +1,7 @@
-export const TILE_WIDTH = 96;
-export const TILE_HEIGHT = 48;
-export const ORIGIN_X = 640;
-export const ORIGIN_Y = 96;
+export const TILE_WIDTH = 80;
+export const TILE_HEIGHT = 40;
+export const ORIGIN_X = 720;
+export const ORIGIN_Y = 36;
 
 export function gridToScreen(gx: number, gy: number) {
   return {

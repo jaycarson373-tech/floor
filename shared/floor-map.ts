@@ -1,18 +1,24 @@
 export const FLOOR_MAP = [
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],
-  [0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0],
-  [0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],
+  [0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0],
+  [0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 ] as const;
 
 export const GRID_HEIGHT = FLOOR_MAP.length;
@@ -58,43 +64,63 @@ export type FloorElementKind =
   | "crate"
   | "banner"
   | "obelisk"
-  | "arch";
+  | "arch"
+  | "terminal"
+  | "tower"
+  | "desk"
+  | "statue"
+  | "ticker";
 
 export type FloorElement = {
   id: string;
   kind: FloorElementKind;
   gx: number;
   gy: number;
-  variant?: "gold" | "teal" | "rose" | "violet";
+  variant?: "gold" | "teal" | "rose" | "violet" | "emerald" | "amber" | "cyan" | "red";
 };
 
 export const FLOOR_ELEMENTS: FloorElement[] = [
-  { id: "plaza-fountain", kind: "fountain", gx: 7, gy: 5, variant: "teal" },
-  { id: "plaza-fountain-2", kind: "fountain", gx: 8, gy: 5, variant: "teal" },
-  { id: "plaza-fountain-3", kind: "fountain", gx: 7, gy: 6, variant: "teal" },
-  { id: "plaza-fountain-4", kind: "fountain", gx: 8, gy: 6, variant: "teal" },
-  { id: "northwest-planter", kind: "planter", gx: 2, gy: 2 },
-  { id: "northwest-planter-2", kind: "planter", gx: 3, gy: 2 },
-  { id: "northeast-planter", kind: "planter", gx: 11, gy: 2 },
-  { id: "northeast-planter-2", kind: "planter", gx: 12, gy: 2 },
-  { id: "southwest-crates", kind: "crate", gx: 2, gy: 8 },
-  { id: "southwest-crates-2", kind: "crate", gx: 3, gy: 8 },
-  { id: "southeast-crystals", kind: "crystal", gx: 12, gy: 8, variant: "violet" },
-  { id: "southeast-crystals-2", kind: "crystal", gx: 13, gy: 8, variant: "rose" },
-  { id: "west-arch", kind: "arch", gx: 5, gy: 5, variant: "gold" },
-  { id: "east-arch", kind: "arch", gx: 10, gy: 5, variant: "gold" },
-  { id: "north-obelisk", kind: "obelisk", gx: 7, gy: 2, variant: "violet" },
-  { id: "north-obelisk-2", kind: "obelisk", gx: 8, gy: 2, variant: "violet" },
-  { id: "market-banner", kind: "banner", gx: 5, gy: 9, variant: "rose" },
-  { id: "market-banner-2", kind: "banner", gx: 10, gy: 9, variant: "teal" },
-  { id: "lamp-0", kind: "lamp", gx: 1, gy: 1, variant: "gold" },
-  { id: "lamp-1", kind: "lamp", gx: 14, gy: 1, variant: "gold" },
-  { id: "lamp-2", kind: "lamp", gx: 1, gy: 12, variant: "gold" },
-  { id: "lamp-3", kind: "lamp", gx: 14, gy: 12, variant: "gold" },
-  { id: "lamp-4", kind: "lamp", gx: 4, gy: 4, variant: "gold" },
-  { id: "lamp-5", kind: "lamp", gx: 11, gy: 4, variant: "gold" },
-  { id: "lamp-6", kind: "lamp", gx: 4, gy: 10, variant: "gold" },
-  { id: "lamp-7", kind: "lamp", gx: 11, gy: 10, variant: "gold" }
+  { id: "northwest-tower", kind: "tower", gx: 1, gy: 1, variant: "emerald" },
+  { id: "northeast-tower", kind: "tower", gx: 22, gy: 1, variant: "emerald" },
+  { id: "southwest-tower", kind: "tower", gx: 1, gy: 18, variant: "emerald" },
+  { id: "southeast-tower", kind: "tower", gx: 22, gy: 18, variant: "emerald" },
+  { id: "main-ticker", kind: "ticker", gx: 7, gy: 2, variant: "emerald" },
+  { id: "left-ticker", kind: "ticker", gx: 5, gy: 3, variant: "cyan" },
+  { id: "right-ticker", kind: "ticker", gx: 10, gy: 3, variant: "amber" },
+  { id: "desk-0", kind: "desk", gx: 4, gy: 5, variant: "emerald" },
+  { id: "desk-1", kind: "desk", gx: 5, gy: 7, variant: "emerald" },
+  { id: "desk-2", kind: "desk", gx: 7, gy: 4, variant: "cyan" },
+  { id: "desk-3", kind: "desk", gx: 8, gy: 8, variant: "emerald" },
+  { id: "desk-4", kind: "desk", gx: 10, gy: 7, variant: "amber" },
+  { id: "desk-5", kind: "desk", gx: 12, gy: 5, variant: "emerald" },
+  { id: "terminal-0", kind: "terminal", gx: 6, gy: 5, variant: "emerald" },
+  { id: "terminal-1", kind: "terminal", gx: 9, gy: 5, variant: "emerald" },
+  { id: "terminal-2", kind: "terminal", gx: 6, gy: 6, variant: "cyan" },
+  { id: "terminal-3", kind: "terminal", gx: 9, gy: 6, variant: "amber" },
+  { id: "bull-core", kind: "statue", gx: 7, gy: 7, variant: "emerald" },
+  { id: "east-ticker", kind: "ticker", gx: 17, gy: 4, variant: "emerald" },
+  { id: "east-ticker-2", kind: "ticker", gx: 20, gy: 5, variant: "cyan" },
+  { id: "portfolio-desk-0", kind: "desk", gx: 17, gy: 8, variant: "emerald" },
+  { id: "portfolio-desk-1", kind: "desk", gx: 19, gy: 9, variant: "amber" },
+  { id: "portfolio-desk-2", kind: "desk", gx: 21, gy: 11, variant: "cyan" },
+  { id: "risk-terminal-0", kind: "terminal", gx: 15, gy: 10, variant: "red" },
+  { id: "risk-terminal-1", kind: "terminal", gx: 18, gy: 12, variant: "emerald" },
+  { id: "south-market-ticker", kind: "ticker", gx: 13, gy: 15, variant: "amber" },
+  { id: "south-desk-0", kind: "desk", gx: 9, gy: 16, variant: "emerald" },
+  { id: "south-desk-1", kind: "desk", gx: 12, gy: 17, variant: "cyan" },
+  { id: "south-desk-2", kind: "desk", gx: 16, gy: 17, variant: "emerald" },
+  { id: "tape-up-arch", kind: "arch", gx: 5, gy: 10, variant: "emerald" },
+  { id: "tape-down-arch", kind: "arch", gx: 11, gy: 10, variant: "rose" },
+  { id: "lamp-0", kind: "lamp", gx: 3, gy: 1, variant: "gold" },
+  { id: "lamp-1", kind: "lamp", gx: 12, gy: 1, variant: "gold" },
+  { id: "lamp-2", kind: "lamp", gx: 3, gy: 12, variant: "gold" },
+  { id: "lamp-3", kind: "lamp", gx: 20, gy: 16, variant: "gold" },
+  { id: "lamp-4", kind: "lamp", gx: 2, gy: 6, variant: "gold" },
+  { id: "lamp-5", kind: "lamp", gx: 13, gy: 6, variant: "gold" },
+  { id: "lamp-6", kind: "lamp", gx: 18, gy: 3, variant: "gold" },
+  { id: "lamp-7", kind: "lamp", gx: 6, gy: 15, variant: "gold" },
+  { id: "lamp-8", kind: "lamp", gx: 15, gy: 18, variant: "gold" },
+  { id: "lamp-9", kind: "lamp", gx: 22, gy: 12, variant: "gold" }
 ];
 
 export function isWalkable(gx: number, gy: number): boolean {
@@ -120,6 +146,10 @@ export function tapeSideAt(gx: number, gy: number): TapeSide | null {
 }
 
 export function nearestSpawn(): { gx: number; gy: number } {
+  if (isWalkable(11, 7)) {
+    return { gx: 11, gy: 7 };
+  }
+
   for (let gy = 0; gy < GRID_HEIGHT; gy += 1) {
     for (let gx = 0; gx < GRID_WIDTH; gx += 1) {
       if (isWalkable(gx, gy)) {
