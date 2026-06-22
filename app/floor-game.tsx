@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { gridToScreen, screenToGrid, TILE_HEIGHT, TILE_WIDTH } from "@/client/iso";
 import type { Database } from "@/lib/database.types";
-import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { createSupabaseBrowserClient, getSupabaseBrowserConfigError } from "@/lib/supabase/client";
 import CapitalPanel from "./capital-panel";
 import DuelPanel from "./duel-panel";
 import SeasonPanel from "./season-panel";
@@ -632,7 +632,9 @@ export default function FloorGame() {
 
   useEffect(() => {
     try {
-      setSupabase(createSupabaseBrowserClient());
+      const error = getSupabaseBrowserConfigError();
+      setConfigError(error);
+      setSupabase(error ? null : createSupabaseBrowserClient());
     } catch (error) {
       setConfigError(error instanceof Error ? error.message : "Supabase is not configured.");
     }
