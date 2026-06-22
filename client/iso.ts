@@ -1,7 +1,8 @@
 export const TILE_WIDTH = 96;
 export const TILE_HEIGHT = 48;
-export const ORIGIN_X = 640;
-export const ORIGIN_Y = 96;
+// Wider board: 24 cols × 20 rows — center origin pushed right
+export const ORIGIN_X = 820;
+export const ORIGIN_Y = 88;
 
 export function gridToScreen(gx: number, gy: number) {
   return {
