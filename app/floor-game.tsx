@@ -1,5 +1,5 @@
 "use client";
-
+// updated
 import { useCallback, useEffect, useRef, useState } from "react";
 import { gridToScreen, screenToGrid, TILE_HEIGHT, TILE_WIDTH } from "@/client/iso";
 import type { Database } from "@/lib/database.types";
@@ -138,29 +138,9 @@ function PlayerEntry({ onJoin }: { onJoin: (name: string) => Promise<void> }) {
 
   return (
     <main className="entry-wrap">
-      <div className="entry-orbit" aria-hidden="true">
-        <span />
-        <span />
-        <span />
-      </div>
       <section className="entry-panel">
-        <div className="entry-kicker">Live hedge fund floor</div>
         <h1>The Floor</h1>
-        <p>Step onto the trading floor, take a desk, and climb from analyst to boss.</p>
-        <div className="entry-stats" aria-hidden="true">
-          <div>
-            <strong>The Tape</strong>
-            <span>UP / DOWN PvP</span>
-          </div>
-          <div>
-            <strong>10,000</strong>
-            <span>Test Credits</span>
-          </div>
-          <div>
-            <strong>Ranked</strong>
-            <span>Wallet-gated</span>
-          </div>
-        </div>
+        <p>Enter a temporary name for this browser session.</p>
         <form className="entry-form" onSubmit={submit}>
           <input
             autoFocus
@@ -170,7 +150,7 @@ function PlayerEntry({ onJoin }: { onJoin: (name: string) => Promise<void> }) {
             onChange={(event) => setName(event.target.value)}
           />
           <button disabled={submitting} type="submit">
-            {submitting ? "Opening desk..." : "Enter The Floor"}
+            {submitting ? "Entering..." : "Enter"}
           </button>
           <div className="error" role="status">
             {error}
@@ -267,57 +247,49 @@ function FloorCanvas({
     function drawTile(gx: number, gy: number, blocked: boolean, now: number) {
       const pulse = Math.sin(now / 650 + gx * 0.45 + gy * 0.3);
       const plaza = gx >= 5 && gx <= 10 && gy >= 4 && gy <= 8;
-      const eastDesk = gx >= 15 && gx <= 21 && gy >= 6 && gy <= 12;
-      const southDesk = gx >= 8 && gx <= 17 && gy >= 14 && gy <= 18;
-      const lane = gx === 11 || gy === 10 || gx + gy === 22 || gx - gy === 4;
       const edge = gx === 0 || gy === 0 || gx === GRID_WIDTH - 1 || gy === GRID_HEIGHT - 1;
       const tapeSide = tapeSideAt(gx, gy);
-      const fill =
-        tapeSide === "up"
-          ? "#0f6b45"
-          : tapeSide === "down"
-            ? "#723246"
-            : blocked
-              ? "#071015"
-              : plaza
-                ? "#172830"
-                : eastDesk
-                  ? "#10292f"
-                  : southDesk
-                    ? "#171f2e"
-                    : lane
-                      ? "#1d3037"
-                      : edge
-                        ? "#10272b"
-                        : "#13252c";
-      const stroke =
-        tapeSide === "up"
-          ? "#00f59b"
-          : tapeSide === "down"
-            ? "#ff6f8b"
-            : blocked
-              ? "#0e1d24"
-              : plaza || eastDesk || southDesk
-                ? "#2f5964"
-                : edge
-                  ? "#00f59b"
-                  : lane
-                    ? "#526875"
-                    : "#2b424b";
+
+      // Palette: navy floor with neon/amber/danger tones
+      const fill = tapeSide === "up"
+        ? `rgba(0,${60 + Math.round(pulse * 10)},35,0.9)`
+        : tapeSide === "down"
+          ? `rgba(${80 + Math.round(pulse * 8)},10,30,0.9)`
+          : blocked
+            ? "#0d1520"
+            : plaza
+              ? "#121e30"
+              : edge
+                ? "#0c1824"
+                : "#0f1929";
+      const stroke = tapeSide === "up"
+        ? `rgba(0,255,157,${0.55 + pulse * 0.18})`
+        : tapeSide === "down"
+          ? `rgba(255,77,109,${0.55 + pulse * 0.18})`
+          : blocked
+            ? "#0a1018"
+            : plaza
+              ? "rgba(255,194,71,0.18)"
+              : "rgba(255,255,255,0.08)";
 
       drawDiamond(gx, gy, fill, stroke);
 
-      if (edge && !blocked) {
+      // reflective sheen on walkable tiles
+      if (!blocked) {
         const point = gridToScreen(gx, gy);
+        const sheen = ctx.createLinearGradient(point.x - TILE_WIDTH / 2, point.y, point.x + TILE_WIDTH / 2, point.y + TILE_HEIGHT);
+        sheen.addColorStop(0, "rgba(255,255,255,0.04)");
+        sheen.addColorStop(0.5, "rgba(255,255,255,0.01)");
+        sheen.addColorStop(1, "rgba(0,0,0,0)");
         ctx.save();
-        ctx.globalCompositeOperation = "lighter";
-        ctx.strokeStyle = gx + gy > GRID_WIDTH ? "rgba(255, 194, 71, 0.48)" : "rgba(0, 245, 155, 0.5)";
-        ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(point.x - TILE_WIDTH / 2 + 8, point.y + TILE_HEIGHT / 2);
-        ctx.lineTo(point.x, point.y + TILE_HEIGHT - 8);
-        ctx.lineTo(point.x + TILE_WIDTH / 2 - 8, point.y + TILE_HEIGHT / 2);
-        ctx.stroke();
+        ctx.moveTo(point.x, point.y);
+        ctx.lineTo(point.x + TILE_WIDTH / 2, point.y + TILE_HEIGHT / 2);
+        ctx.lineTo(point.x, point.y + TILE_HEIGHT);
+        ctx.lineTo(point.x - TILE_WIDTH / 2, point.y + TILE_HEIGHT / 2);
+        ctx.closePath();
+        ctx.fillStyle = sheen;
+        ctx.fill();
         ctx.restore();
       }
 
@@ -325,35 +297,34 @@ function FloorCanvas({
         const point = gridToScreen(gx, gy);
         ctx.save();
         ctx.globalCompositeOperation = "lighter";
-        ctx.fillStyle = tapeSide === "up" ? `rgba(141, 242, 188, ${0.14 + pulse * 0.03})` : `rgba(255, 155, 173, ${0.14 + pulse * 0.03})`;
+        ctx.fillStyle = tapeSide === "up"
+          ? `rgba(0,255,157,${0.18 + pulse * 0.08})`
+          : `rgba(255,77,109,${0.18 + pulse * 0.08})`;
         ctx.beginPath();
-        ctx.ellipse(point.x, point.y + TILE_HEIGHT / 2, 30, 11, 0, 0, Math.PI * 2);
+        ctx.ellipse(point.x, point.y + TILE_HEIGHT / 2, 32, 12, 0, 0, Math.PI * 2);
         ctx.fill();
+        // neon stroke glow
+        ctx.strokeStyle = tapeSide === "up" ? "rgba(0,255,157,0.6)" : "rgba(255,77,109,0.6)";
+        ctx.lineWidth = 1.5;
+        ctx.shadowColor = tapeSide === "up" ? "#00ff9d" : "#ff4d6d";
+        ctx.shadowBlur = 10;
+        drawDiamond(gx, gy, "transparent", tapeSide === "up" ? "rgba(0,255,157,0.5)" : "rgba(255,77,109,0.5)", 2);
         ctx.restore();
-        ctx.fillStyle = "#f9fbf4";
-        ctx.font = "800 11px Inter, system-ui, sans-serif";
+        ctx.fillStyle = tapeSide === "up" ? "#00ff9d" : "#ff4d6d";
+        ctx.font = "800 10px Inter, system-ui, sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(tapeSide.toUpperCase(), point.x, point.y + TILE_HEIGHT / 2);
       }
 
-      if ((plaza || eastDesk || southDesk || lane) && !blocked) {
-        const point = gridToScreen(gx, gy);
-        ctx.beginPath();
-        ctx.moveTo(point.x - TILE_WIDTH / 2 + 10, point.y + TILE_HEIGHT / 2);
-        ctx.lineTo(point.x, point.y + TILE_HEIGHT - 10);
-        ctx.lineTo(point.x + TILE_WIDTH / 2 - 10, point.y + TILE_HEIGHT / 2);
-        ctx.strokeStyle = lane ? `rgba(255, 194, 71, ${0.16 + pulse * 0.03})` : `rgba(0, 245, 155, ${0.18 + pulse * 0.04})`;
-        ctx.stroke();
-      }
-
-      if (!blocked) {
+      if (plaza && !blocked) {
         const point = gridToScreen(gx, gy);
         ctx.beginPath();
         ctx.moveTo(point.x - TILE_WIDTH / 2 + 8, point.y + TILE_HEIGHT / 2);
         ctx.lineTo(point.x, point.y + TILE_HEIGHT - 8);
         ctx.lineTo(point.x + TILE_WIDTH / 2 - 8, point.y + TILE_HEIGHT / 2);
-        ctx.strokeStyle = "rgba(190, 255, 236, 0.055)";
+        ctx.strokeStyle = `rgba(255,194,71,${0.1 + pulse * 0.04})`;
+        ctx.lineWidth = 1;
         ctx.stroke();
       }
     }
@@ -371,39 +342,40 @@ function FloorCanvas({
       const bob = Math.sin(now / 450 + element.gx + element.gy) * 2;
       const variantColor =
         element.variant === "rose"
-          ? "#ff8fa3"
+          ? "#ff4d6d"
           : element.variant === "violet"
-            ? "#b994ff"
-            : element.variant === "teal" || element.variant === "cyan"
-              ? "#65eaff"
-              : element.variant === "emerald"
-                ? "#00f59b"
-                : element.variant === "red"
-                  ? "#ff5e78"
-                  : "#ffc247";
+            ? "#a64dff"
+            : element.variant === "teal"
+              ? "#00ff9d"
+              : "#ffc247";
 
       ctx.save();
 
       if (element.kind === "lamp") {
         ctx.globalCompositeOperation = "lighter";
-        const glow = ctx.createRadialGradient(point.x, baseY - 34, 4, point.x, baseY - 34, 58);
-        glow.addColorStop(0, "rgba(255, 194, 71, 0.5)");
-        glow.addColorStop(1, "rgba(255, 194, 71, 0)");
+        const glowA = variantColor === "#ffc247" ? "rgba(255,194,71,0.38)" : variantColor === "#00ff9d" ? "rgba(0,255,157,0.38)" : variantColor === "#ff4d6d" ? "rgba(255,77,109,0.32)" : "rgba(166,77,255,0.32)";
+        const glowB = variantColor === "#ffc247" ? "rgba(255,194,71,0)" : variantColor === "#00ff9d" ? "rgba(0,255,157,0)" : variantColor === "#ff4d6d" ? "rgba(255,77,109,0)" : "rgba(166,77,255,0)";
+        const glow = ctx.createRadialGradient(point.x, baseY - 34, 4, point.x, baseY - 34, 60);
+        glow.addColorStop(0, glowA);
+        glow.addColorStop(1, glowB);
         ctx.fillStyle = glow;
         ctx.beginPath();
-        ctx.arc(point.x, baseY - 34, 58, 0, Math.PI * 2);
+        ctx.arc(point.x, baseY - 34, 60, 0, Math.PI * 2);
         ctx.fill();
         ctx.globalCompositeOperation = "source-over";
-        ctx.strokeStyle = "#1b2025";
+        ctx.strokeStyle = "#080c16";
         ctx.lineWidth = 5;
         ctx.beginPath();
         ctx.moveTo(point.x, baseY - 4);
         ctx.lineTo(point.x, baseY - 42);
         ctx.stroke();
         ctx.fillStyle = variantColor;
+        ctx.shadowColor = variantColor;
+        ctx.shadowBlur = 14;
         ctx.beginPath();
         ctx.arc(point.x, baseY - 47, 8, 0, Math.PI * 2);
         ctx.fill();
+        ctx.shadowBlur = 0;
       }
 
       if (element.kind === "fountain") {
@@ -424,136 +396,6 @@ function FloorCanvas({
         ctx.moveTo(point.x - 7, baseY - 14);
         ctx.quadraticCurveTo(point.x, baseY - 32 + bob, point.x + 8, baseY - 14);
         ctx.stroke();
-      }
-
-      if (element.kind === "tower") {
-        ctx.globalCompositeOperation = "lighter";
-        const glow = ctx.createRadialGradient(point.x, baseY - 56, 4, point.x, baseY - 56, 86);
-        glow.addColorStop(0, "rgba(0, 245, 155, 0.5)");
-        glow.addColorStop(1, "rgba(0, 245, 155, 0)");
-        ctx.fillStyle = glow;
-        ctx.beginPath();
-        ctx.arc(point.x, baseY - 56, 86, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.globalCompositeOperation = "source-over";
-        ctx.fillStyle = "#071015";
-        ctx.strokeStyle = "#243943";
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.rect(point.x - 20, baseY - 92, 40, 78);
-        ctx.fill();
-        ctx.stroke();
-        ctx.fillStyle = variantColor;
-        ctx.fillRect(point.x - 13, baseY - 84, 26, 9);
-        ctx.fillRect(point.x - 4, baseY - 70, 8, 45);
-        ctx.strokeStyle = variantColor;
-        ctx.lineWidth = 2;
-        ctx.strokeRect(point.x - 18, baseY - 96, 36, 16);
-      }
-
-      if (element.kind === "ticker") {
-        ctx.save();
-        ctx.translate(point.x, baseY - 40);
-        ctx.fillStyle = "#061016";
-        ctx.strokeStyle = variantColor;
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.roundRect(-42, -38, 84, 48, 4);
-        ctx.fill();
-        ctx.stroke();
-        ctx.globalCompositeOperation = "lighter";
-        ctx.strokeStyle = variantColor;
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        for (let i = 0; i < 9; i += 1) {
-          const x = -34 + i * 8;
-          const y = 1 - Math.sin(now / 480 + i + element.gx) * 15 - i * 0.8;
-          if (i === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
-        }
-        ctx.stroke();
-        ctx.fillStyle = "rgba(255,255,255,0.18)";
-        for (let i = 0; i < 4; i += 1) {
-          ctx.fillRect(26, -30 + i * 9, 10, 2);
-        }
-        ctx.restore();
-      }
-
-      if (element.kind === "desk") {
-        ctx.fillStyle = "#071017";
-        ctx.strokeStyle = "#24424c";
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(point.x - 40, baseY - 6);
-        ctx.lineTo(point.x, baseY - 24);
-        ctx.lineTo(point.x + 42, baseY - 6);
-        ctx.lineTo(point.x + 18, baseY + 10);
-        ctx.lineTo(point.x - 26, baseY + 10);
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-        ctx.globalCompositeOperation = "lighter";
-        ctx.strokeStyle = variantColor;
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(point.x - 24, baseY - 4);
-        ctx.lineTo(point.x + 25, baseY - 4);
-        ctx.stroke();
-        for (let i = 0; i < 3; i += 1) {
-          ctx.fillStyle = i === 1 ? "#ffc247" : variantColor;
-          ctx.fillRect(point.x - 18 + i * 14, baseY - 14 - (i % 2) * 4, 9, 3);
-        }
-        ctx.globalCompositeOperation = "source-over";
-      }
-
-      if (element.kind === "terminal") {
-        ctx.fillStyle = "#050b10";
-        ctx.strokeStyle = variantColor;
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.roundRect(point.x - 31, baseY - 58, 62, 36, 4);
-        ctx.fill();
-        ctx.stroke();
-        ctx.globalCompositeOperation = "lighter";
-        ctx.strokeStyle = variantColor;
-        ctx.lineWidth = 1.4;
-        ctx.beginPath();
-        for (let i = 0; i < 7; i += 1) {
-          const x = point.x - 23 + i * 8;
-          const y = baseY - 36 - Math.cos(now / 420 + i) * 9;
-          if (i === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
-        }
-        ctx.stroke();
-        ctx.fillStyle = "rgba(0, 245, 155, 0.22)";
-        ctx.fillRect(point.x - 28, baseY - 54, 56, 4);
-        ctx.globalCompositeOperation = "source-over";
-        ctx.fillStyle = "#071017";
-        ctx.fillRect(point.x - 4, baseY - 22, 8, 24);
-      }
-
-      if (element.kind === "statue") {
-        ctx.globalCompositeOperation = "lighter";
-        ctx.fillStyle = "rgba(0, 245, 155, 0.22)";
-        ctx.beginPath();
-        ctx.ellipse(point.x, baseY - 6, 58, 22, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.globalCompositeOperation = "source-over";
-        ctx.fillStyle = "#101b1d";
-        ctx.strokeStyle = variantColor;
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.ellipse(point.x, baseY - 12, 38, 14, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-        ctx.fillStyle = variantColor;
-        ctx.beginPath();
-        ctx.moveTo(point.x - 20, baseY - 26);
-        ctx.lineTo(point.x + 12, baseY - 34 + bob);
-        ctx.lineTo(point.x + 28, baseY - 23);
-        ctx.lineTo(point.x + 2, baseY - 18);
-        ctx.closePath();
-        ctx.fill();
       }
 
       if (element.kind === "planter") {
@@ -665,34 +507,143 @@ function FloorCanvas({
       const point = gridToScreen(gx, gy);
       const baseY = point.y + TILE_HEIGHT / 2;
       const stride = Math.sin(now / 90) * (progress < 1 ? 3 : 1);
+      const playerColor = isLocal ? "#00ff9d" : "#7bdff2";
+      const bodyColor = isLocal ? "#003320" : "#0a2632";
 
       ctx.save();
-      ctx.shadowColor = "rgba(0, 0, 0, 0.35)";
-      ctx.shadowBlur = 10;
-      ctx.beginPath();
-      ctx.ellipse(point.x, baseY + 9, 21, 8, 0, 0, Math.PI * 2);
-      ctx.fillStyle = "rgba(0, 0, 0, 0.28)";
-      ctx.fill();
-      ctx.shadowBlur = 0;
 
+      // shadow / ground ring
       ctx.beginPath();
-      ctx.arc(point.x, baseY - 20 + stride, 13, 0, Math.PI * 2);
-      ctx.fillStyle = isLocal ? "#ffc247" : "#7bdff2";
+      ctx.ellipse(point.x, baseY + 9, 20, 7, 0, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
       ctx.fill();
-      ctx.strokeStyle = "#15191d";
-      ctx.lineWidth = 3;
+
+      // glow halo for local player
+      if (isLocal) {
+        ctx.globalCompositeOperation = "lighter";
+        const halo = ctx.createRadialGradient(point.x, baseY - 20 + stride, 4, point.x, baseY - 20 + stride, 28);
+        halo.addColorStop(0, "rgba(0,255,157,0.28)");
+        halo.addColorStop(1, "rgba(0,255,157,0)");
+        ctx.fillStyle = halo;
+        ctx.beginPath();
+        ctx.arc(point.x, baseY - 20 + stride, 28, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalCompositeOperation = "source-over";
+      }
+
+      // head
+      ctx.beginPath();
+      ctx.arc(point.x, baseY - 20 + stride, 12, 0, Math.PI * 2);
+      ctx.fillStyle = playerColor;
+      ctx.fill();
+      ctx.strokeStyle = "#050810";
+      ctx.lineWidth = 2.5;
       ctx.stroke();
-      ctx.fillStyle = isLocal ? "#2b2420" : "#16323a";
+
+      // body
+      ctx.fillStyle = bodyColor;
       ctx.beginPath();
-      ctx.ellipse(point.x, baseY - 4, 10, 15, 0, 0, Math.PI * 2);
+      ctx.ellipse(point.x, baseY - 4, 9, 14, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      ctx.fillStyle = "#f6f2e9";
-      ctx.font = "600 12px Inter, system-ui, sans-serif";
+      // name tag
+      ctx.shadowColor = isLocal ? "rgba(0,255,157,0.6)" : "rgba(0,0,0,0.8)";
+      ctx.shadowBlur = isLocal ? 8 : 4;
+      ctx.fillStyle = isLocal ? "#00ff9d" : "#c8e8f0";
+      ctx.font = `${isLocal ? "700" : "600"} 11px Inter, system-ui, sans-serif`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText(player.name.slice(0, 14), point.x, baseY - 43);
 
+      ctx.restore();
+    }
+
+    // ── draw bull statue at central plaza ───────────────────
+    function drawBull(now: number) {
+      const plazaCenterGx = 7.5;
+      const plazaCenterGy = 6;
+      const point = gridToScreen(plazaCenterGx, plazaCenterGy);
+      const baseY = point.y + TILE_HEIGHT / 2 - 8;
+      const pulse = Math.sin(now / 700) * 0.5 + 0.5;
+
+      ctx.save();
+      // glow platform
+      ctx.globalCompositeOperation = "lighter";
+      const platformGlow = ctx.createRadialGradient(point.x, baseY + 4, 4, point.x, baseY + 4, 60);
+      platformGlow.addColorStop(0, `rgba(0,255,157,${0.22 + pulse * 0.1})`);
+      platformGlow.addColorStop(1, "rgba(0,255,157,0)");
+      ctx.fillStyle = platformGlow;
+      ctx.beginPath();
+      ctx.ellipse(point.x, baseY + 4, 60, 22, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalCompositeOperation = "source-over";
+
+      // circular platform base
+      ctx.strokeStyle = `rgba(0,255,157,${0.5 + pulse * 0.25})`;
+      ctx.lineWidth = 2;
+      ctx.fillStyle = "rgba(0,40,25,0.7)";
+      ctx.beginPath();
+      ctx.ellipse(point.x, baseY + 6, 38, 14, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      // body
+      ctx.fillStyle = "#c8a86e";
+      ctx.strokeStyle = "#2a1e0a";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.ellipse(point.x - 2, baseY - 16, 20, 13, -0.15, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      // head
+      ctx.beginPath();
+      ctx.ellipse(point.x + 16, baseY - 22, 11, 9, 0.3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      // horns
+      ctx.strokeStyle = "#e0c88a";
+      ctx.lineWidth = 3;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(point.x + 20, baseY - 28);
+      ctx.quadraticCurveTo(point.x + 32, baseY - 44, point.x + 26, baseY - 50);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(point.x + 24, baseY - 26);
+      ctx.quadraticCurveTo(point.x + 36, baseY - 38, point.x + 32, baseY - 43);
+      ctx.stroke();
+
+      // legs
+      ctx.strokeStyle = "#b09060";
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.moveTo(point.x - 14, baseY - 4);
+      ctx.lineTo(point.x - 16, baseY + 6);
+      ctx.moveTo(point.x - 4, baseY - 3);
+      ctx.lineTo(point.x - 5, baseY + 6);
+      ctx.moveTo(point.x + 8, baseY - 3);
+      ctx.lineTo(point.x + 8, baseY + 6);
+      ctx.moveTo(point.x + 18, baseY - 5);
+      ctx.lineTo(point.x + 20, baseY + 5);
+      ctx.stroke();
+
+      // tail
+      ctx.strokeStyle = "#c8a86e";
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(point.x - 20, baseY - 14);
+      ctx.quadraticCurveTo(point.x - 34, baseY - 8, point.x - 30, baseY);
+      ctx.stroke();
+
+      // neon outline glow
+      ctx.globalCompositeOperation = "lighter";
+      ctx.strokeStyle = `rgba(0,255,157,${0.25 + pulse * 0.12})`;
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.ellipse(point.x - 2, baseY - 16, 21, 14, -0.15, 0, Math.PI * 2);
+      ctx.stroke();
       ctx.restore();
     }
 
@@ -709,30 +660,79 @@ function FloorCanvas({
 
       ctx.setTransform(scale, 0, 0, scale, 0, 0);
       ctx.clearRect(0, 0, width, height);
-      const backdrop = ctx.createLinearGradient(0, 0, width, height);
-      backdrop.addColorStop(0, "#020713");
-      backdrop.addColorStop(0.5, "#071117");
-      backdrop.addColorStop(1, "#02050a");
-      ctx.fillStyle = backdrop;
+
+      // ── Night city skybox ──────────────────────────────────
+      const sky = ctx.createLinearGradient(0, 0, 0, height * 0.55);
+      sky.addColorStop(0,   "#020510");
+      sky.addColorStop(0.5, "#060d1a");
+      sky.addColorStop(1,   "#0a0e1a");
+      ctx.fillStyle = sky;
       ctx.fillRect(0, 0, width, height);
 
+      // distant city skyline silhouette
       ctx.save();
-      const floorGlow = ctx.createRadialGradient(width * 0.42, height * 0.5, 40, width * 0.42, height * 0.5, Math.max(width, height) * 0.62);
-      floorGlow.addColorStop(0, "rgba(0, 245, 155, 0.11)");
-      floorGlow.addColorStop(0.45, "rgba(255, 194, 71, 0.04)");
-      floorGlow.addColorStop(1, "rgba(0, 0, 0, 0)");
-      ctx.fillStyle = floorGlow;
-      ctx.fillRect(0, 0, width, height);
+      ctx.fillStyle = "#0c1220";
+      const buildingSeeds = [14, 38, 22, 52, 8, 44, 30, 18, 60, 6, 36, 50];
+      const skylineY = height * 0.28;
+      buildingSeeds.forEach((seed, i) => {
+        const bx = (i / buildingSeeds.length) * width - 20 + (seed % 5) * 14;
+        const bh = 28 + (seed % 40);
+        const bw = 16 + (seed % 28);
+        ctx.fillRect(bx, skylineY - bh, bw, bh);
+        // windows
+        ctx.fillStyle = "#1a2540";
+        for (let wr = 0; wr < Math.floor(bh / 10); wr++) {
+          for (let wc = 0; wc < Math.floor(bw / 8); wc++) {
+            if ((seed + wr + wc + Math.floor(now / 3200)) % 4 !== 0) {
+              ctx.fillRect(bx + wc * 8 + 2, skylineY - bh + wr * 10 + 2, 4, 5);
+            }
+          }
+        }
+        ctx.fillStyle = "#0c1220";
+      });
+      // neon horizon glow
+      const horizonGlow = ctx.createLinearGradient(0, skylineY - 8, 0, skylineY + 24);
+      horizonGlow.addColorStop(0, "rgba(0,255,157,0.09)");
+      horizonGlow.addColorStop(0.4, "rgba(100,0,255,0.06)");
+      horizonGlow.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = horizonGlow;
+      ctx.fillRect(0, skylineY - 8, width, 32);
       ctx.restore();
 
+      // floor area background
+      const floorBg = ctx.createLinearGradient(0, height * 0.3, 0, height);
+      floorBg.addColorStop(0, "#0a0e1a");
+      floorBg.addColorStop(1, "#06090f");
+      ctx.fillStyle = floorBg;
+      ctx.fillRect(0, height * 0.3, width, height * 0.7);
+
+      // subtle floor reflections (horizontal shimmers)
+      ctx.save();
+      ctx.globalAlpha = 0.04;
+      ctx.globalCompositeOperation = "screen";
+      for (let i = 0; i < 6; i++) {
+        const ry = height * 0.5 + i * 22 + Math.sin(now / 2200 + i) * 4;
+        const rGrad = ctx.createLinearGradient(0, ry, width, ry);
+        rGrad.addColorStop(0, "rgba(0,255,157,0)");
+        rGrad.addColorStop(0.4, `rgba(0,255,157,${0.5 + (i % 2) * 0.3})`);
+        rGrad.addColorStop(0.6, `rgba(100,0,255,${0.3 + (i % 2) * 0.2})`);
+        rGrad.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = rGrad;
+        ctx.fillRect(0, ry, width, 2);
+      }
+      ctx.restore();
+
+      // ambient particle stars
       ctx.save();
       ctx.globalCompositeOperation = "screen";
-      ctx.fillStyle = "rgba(255, 194, 71, 0.08)";
-      for (let i = 0; i < 24; i += 1) {
-        const x = (i * 149 + now / 22) % (width + 120) - 60;
-        const y = (i * 83 + Math.sin(now / 900 + i) * 18) % (height + 80) - 40;
+      for (let i = 0; i < 32; i++) {
+        const px = ((i * 173 + now / 28) % (width + 60)) - 30;
+        const py = ((i * 97 + Math.sin(now / 1100 + i) * 20) % (height * 0.45)) - 10;
+        const alpha = 0.12 + (i % 3) * 0.06 + Math.sin(now / 600 + i) * 0.04;
+        const col = i % 3 === 0 ? `rgba(0,255,157,${alpha})` : i % 3 === 1 ? `rgba(255,194,71,${alpha * 0.7})` : `rgba(150,80,255,${alpha * 0.5})`;
+        ctx.fillStyle = col;
         ctx.beginPath();
-        ctx.arc(x, y, 1.3 + (i % 3) * 0.7, 0, Math.PI * 2);
+        ctx.arc(px, py, 0.9 + (i % 3) * 0.4, 0, Math.PI * 2);
         ctx.fill();
       }
       ctx.restore();
@@ -752,21 +752,21 @@ function FloorCanvas({
       for (const pathPoint of path) {
         drawables.push({
           order: pathPoint.gx + pathPoint.gy + 0.16,
-          draw: () => drawTileOverlay(pathPoint, "rgba(255, 194, 71, 0.12)", "rgba(255, 218, 122, 0.56)")
+          draw: () => drawTileOverlay(pathPoint, "rgba(0,255,157,0.08)", "rgba(0,255,157,0.55)")
         });
       }
 
       if (selected) {
         drawables.push({
           order: selected.gx + selected.gy + 0.18,
-          draw: () => drawTileOverlay(selected, "rgba(123, 223, 242, 0.13)", "rgba(123, 223, 242, 0.7)")
+          draw: () => drawTileOverlay(selected, "rgba(255,194,71,0.1)", "rgba(255,194,71,0.7)")
         });
       }
 
       if (hover && isWalkable(hover.gx, hover.gy) && !pathKeys.has(pointKey(hover))) {
         drawables.push({
           order: hover.gx + hover.gy + 0.2,
-          draw: () => drawTileOverlay(hover, "rgba(255, 255, 255, 0.08)", "rgba(255, 255, 255, 0.38)")
+          draw: () => drawTileOverlay(hover, "rgba(255,255,255,0.05)", "rgba(255,255,255,0.28)")
         });
       }
 
@@ -776,6 +776,12 @@ function FloorCanvas({
           draw: () => drawElement(element, now)
         });
       }
+
+      // bull statue in center of plaza
+      drawables.push({
+        order: 7.5 + 6 + 0.45,
+        draw: () => drawBull(now)
+      });
 
       for (const player of playerRef.current.values()) {
         if (!isFresh(player, dateNow)) continue;
@@ -825,12 +831,23 @@ function FloorCanvas({
   );
 }
 
+type TabId = "trade" | "tape" | "season" | "hierarchy";
+
+const TABS: { id: TabId; label: string }[] = [
+  { id: "trade",     label: "Trade" },
+  { id: "tape",      label: "The Tape" },
+  { id: "season",    label: "Season" },
+  { id: "hierarchy", label: "Hierarchy" }
+];
+
 export default function FloorGame() {
   const [supabase, setSupabase] = useState<ReturnType<typeof createSupabaseBrowserClient> | null>(null);
   const [localPlayer, setLocalPlayer] = useState<Player | null>(null);
   const [players, setPlayers] = useState<Map<string, VisualPlayer>>(new Map());
   const [status, setStatus] = useState("Disconnected");
+  const [activeTab, setActiveTab] = useState<TabId>("trade");
   const [configError, setConfigError] = useState("");
+
   const [selectedTile, setSelectedTile] = useState<Point | null>(null);
   const [queuedPath, setQueuedPath] = useState<Point[]>([]);
   const localPlayerRef = useRef<Player | null>(null);
@@ -1142,22 +1159,20 @@ export default function FloorGame() {
       <header className="topbar">
         <div className="brand">
           <strong>The Floor</strong>
-          <span>
-            {localPlayer.name} at ({localPlayer.gx}, {localPlayer.gy})
-          </span>
+          <span className="brand-sub">{localPlayer.name}</span>
         </div>
         <div className="hud">
-          <div className="hud-pill">
-            <span>{onlineCount}</span>
-            <small>online</small>
+          <div className="hud-chip">
+            <span className="val">{onlineCount}</span>
+            <span className="lbl">online</span>
           </div>
-          <div className="hud-pill">
-            <span>{queuedPath.length}</span>
-            <small>steps</small>
+          <div className="hud-chip">
+            <span className="val">{queuedPath.length}</span>
+            <span className="lbl">steps</span>
           </div>
-          <div className="status">
+          <div className="hud-chip">
             <span className={`status-dot ${status === "Realtime connected" ? "ready" : ""}`} />
-            <span>{status}</span>
+            <span className="lbl">{status === "Realtime connected" ? "live" : "connecting"}</span>
           </div>
         </div>
       </header>
@@ -1173,24 +1188,49 @@ export default function FloorGame() {
         </section>
         {supabase ? (
           <div className="side-panels">
-            <TradingPanel localPlayerId={localPlayer.id} supabase={supabase} />
-            <DuelPanel
-              localPlayer={localPlayer}
-              supabase={supabase}
-              onRankedUpdate={(patch) => {
-                const updated = { ...localPlayer, ...patch };
-                localPlayerRef.current = updated;
-                setLocalPlayer(updated);
-                setPlayers((previous) => {
-                  const next = new Map(previous);
-                  next.set(updated.id, upsertVisual(next.get(updated.id), updated));
-                  return next;
-                });
-              }}
-            />
-            <CapitalPanel localPlayerId={localPlayer.id} supabase={supabase} />
-            <TapePanel localPlayerId={localPlayer.id} supabase={supabase} />
-            <SeasonPanel />
+            <nav className="panel-tabs" role="tablist" aria-label="Panel sections">
+              {TABS.map((tab) => (
+                <button
+                  key={tab.id}
+                  role="tab"
+                  aria-selected={activeTab === tab.id}
+                  className={`panel-tab${activeTab === tab.id ? " active" : ""}`}
+                  onClick={() => setActiveTab(tab.id)}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </nav>
+            <div className="panel-body" role="tabpanel">
+              {activeTab === "trade" && (
+                <TradingPanel localPlayerId={localPlayer.id} supabase={supabase} />
+              )}
+              {activeTab === "tape" && (
+                <TapePanel localPlayerId={localPlayer.id} supabase={supabase} />
+              )}
+              {activeTab === "season" && (
+                <SeasonPanel />
+              )}
+              {activeTab === "hierarchy" && (
+                <>
+                  <DuelPanel
+                    localPlayer={localPlayer}
+                    supabase={supabase}
+                    onRankedUpdate={(patch) => {
+                      const updated = { ...localPlayer, ...patch };
+                      localPlayerRef.current = updated;
+                      setLocalPlayer(updated);
+                      setPlayers((previous) => {
+                        const next = new Map(previous);
+                        next.set(updated.id, upsertVisual(next.get(updated.id), updated));
+                        return next;
+                      });
+                    }}
+                  />
+                  <CapitalPanel localPlayerId={localPlayer.id} supabase={supabase} />
+                </>
+              )}
+            </div>
           </div>
         ) : null}
       </section>
