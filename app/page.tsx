@@ -43,8 +43,8 @@ const REWARD_COUNTERS = [
   },
   {
     label: "Reward Engine",
-    value: "Armed Soon",
-    detail: "Dry-run first, then live"
+    value: "Season 1",
+    detail: "Ranked rewards counter"
   }
 ];
 
