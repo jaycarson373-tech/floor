@@ -170,6 +170,34 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ── Docs Section ─────────────────────────────────────── */}
+      <section id="docs" className="lp-docs" aria-labelledby="docs-heading">
+        <div className="lp-section-inner">
+          <h2 id="docs-heading" className="lp-section-title">Documentation</h2>
+          <p className="lp-docs-sub">
+            Everything you need to understand The Floor — mechanics, token, seasons, and the path to the Boss Office.
+          </p>
+          <div className="lp-docs-grid">
+            {[
+              { title: "Getting Started",   desc: "How to join the floor, move your trader, and make your first tape call." },
+              { title: "The Tape",          desc: "How UP and DOWN pads work, payout mechanics, and streak bonuses." },
+              { title: "Ranked Duels",      desc: "Challenge other traders, stake capital, and climb the hierarchy." },
+              { title: "Seasons",           desc: "Season structure, resets, leaderboard rewards, and Boss Office access." },
+              { title: "Tokenomics",        desc: "Supply, fee distribution, creator fee claims, and treasury mechanics." },
+              { title: "Roadmap",           desc: "Upcoming floors, features, and the long-term vision for the ecosystem." },
+            ].map((doc) => (
+              <div key={doc.title} className="lp-doc-card">
+                <div className="lp-doc-card-inner">
+                  <h3 className="lp-doc-title">{doc.title}</h3>
+                  <p className="lp-doc-desc">{doc.desc}</p>
+                  <span className="lp-doc-coming">Coming Soon</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ── Footer ───────────────────────────────────────────── */}
       <footer className="lp-footer">
         <span>The Floor — built on Solana. Follow us on{" "}
