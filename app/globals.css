@@ -642,7 +642,9 @@ button, input, select { font: inherit; }
   place-items: center;
   padding: 24px;
   background:
-    radial-gradient(ellipse at 50% 60%, rgba(0,255,157,0.05), transparent 60%),
+    linear-gradient(90deg, rgba(2,6,10,0.72), rgba(2,6,10,0.44), rgba(2,6,10,0.78)),
+    linear-gradient(180deg, rgba(2,6,10,0.26), rgba(2,6,10,0.9)),
+    url("/office-bg.png") center / cover,
     var(--navy);
 }
 
@@ -696,7 +698,7 @@ button, input, select { font: inherit; }
   border-radius: 10px;
   background:
     linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,0.28)),
-    url("/banner.png") center / cover;
+    url("/office-bg.png") center / cover;
   overflow: hidden;
   position: relative;
 }

@@ -28,6 +28,7 @@ import {
 // Row 1 (y≈0..395): desk | ticker-tower | corner-tower
 // Row 2 (y≈395..800): candlestick-screen | bull | lamp | up-pad | down-pad | trader
 const SPRITE_SRC = "/sprites.png";
+const OFFICE_BG_SRC = "/office-bg.png";
 
 type SpriteKey =
   | "desk"
@@ -229,7 +230,12 @@ function WalletAccess({
     try {
       await onConnect();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not connect wallet.");
+      try {
+        await onSpectate();
+        setError("Wallet did not connect, so you entered as spectator.");
+      } catch {
+        setError(err instanceof Error ? err.message : "Could not connect wallet.");
+      }
     } finally {
       setSubmitting(null);
     }
@@ -382,6 +388,7 @@ function FloorCanvas({
   const pathRef = useRef<Point[]>(queuedPath);
   const selectedRef = useRef<Point | null>(selectedTile);
   const spriteImgRef = useRef<HTMLImageElement | null>(null);
+  const officeBgRef = useRef<HTMLImageElement | null>(null);
 
   // Preload sprite sheet once
   useEffect(() => {
@@ -389,6 +396,11 @@ function FloorCanvas({
     img.crossOrigin = "anonymous";
     img.src = SPRITE_SRC;
     img.onload = () => { spriteImgRef.current = img; };
+
+    const officeBg = new Image();
+    officeBg.crossOrigin = "anonymous";
+    officeBg.src = OFFICE_BG_SRC;
+    officeBg.onload = () => { officeBgRef.current = officeBg; };
   }, []);
 
   useEffect(() => {
@@ -797,6 +809,16 @@ function FloorCanvas({
       }
       ctx.stroke();
       ctx.restore();
+    }
+
+    function drawCoverImage(img: HTMLImageElement, width: number, height: number) {
+      const imageRatio = img.width / img.height;
+      const canvasRatio = width / height;
+      const drawWidth = imageRatio > canvasRatio ? height * imageRatio : width;
+      const drawHeight = imageRatio > canvasRatio ? height : width / imageRatio;
+      const dx = (width - drawWidth) / 2;
+      const dy = (height - drawHeight) / 2;
+      ctx.drawImage(img, dx, dy, drawWidth, drawHeight);
     }
 
     function drawOfficeShell(width: number, height: number, now: number) {
@@ -1323,6 +1345,21 @@ function FloorCanvas({
       floorBg.addColorStop(1, "#06090f");
       ctx.fillStyle = floorBg;
       ctx.fillRect(0, height * 0.3, width, height * 0.7);
+
+      const officeBg = officeBgRef.current;
+      if (officeBg) {
+        ctx.save();
+        ctx.globalAlpha = 0.42;
+        drawCoverImage(officeBg, width, height);
+        const officeShade = ctx.createLinearGradient(0, 0, 0, height);
+        officeShade.addColorStop(0, "rgba(0,4,10,0.12)");
+        officeShade.addColorStop(0.48, "rgba(0,4,10,0.38)");
+        officeShade.addColorStop(1, "rgba(0,4,10,0.72)");
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = officeShade;
+        ctx.fillRect(0, 0, width, height);
+        ctx.restore();
+      }
 
       drawOfficeShell(width, height, now);
 
