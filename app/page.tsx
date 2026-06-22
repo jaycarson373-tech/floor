@@ -48,6 +48,7 @@ export default function LandingPage() {
         <nav className="lp-nav-links" aria-label="Primary">
           <a href="#how-it-works">How It Works</a>
           <a href="#contract">CA</a>
+          <a href="#docs">Docs</a>
           <a
             href="https://x.com/thefloorsolana"
             target="_blank"
