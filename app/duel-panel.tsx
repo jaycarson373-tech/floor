@@ -103,7 +103,7 @@ export default function DuelPanel({
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const gateMint = process.env.NEXT_PUBLIC_GATE_MINT ?? "";
+  const gateMint = process.env.NEXT_PUBLIC_PUMP_GATE_MINT ?? process.env.NEXT_PUBLIC_PUMPST_GATE_MINT ?? process.env.NEXT_PUBLIC_GATE_MINT ?? "";
   const openDuels = useMemo(() => duels.filter((duel) => duel.status === "open"), [duels]);
 
   const loadAll = useCallback(async () => {
@@ -151,7 +151,7 @@ export default function DuelPanel({
 
       const connection = await provider.connect();
       const walletAddress = connection.publicKey.toString();
-      const messageText = `The Floor ranked verification\nPlayer: ${localPlayer.id}\nWallet: ${walletAddress}\nGate mint: ${gateMint}`;
+      const messageText = `PumpSt ranked verification\nPlayer: ${localPlayer.id}\nWallet: ${walletAddress}\nGate mint: ${gateMint}`;
       const signed = await provider.signMessage(new TextEncoder().encode(messageText), "utf8");
       const headers = await authHeaders();
       const response = await fetch("/api/wallet/verify", {

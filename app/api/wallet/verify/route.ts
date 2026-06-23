@@ -10,7 +10,7 @@ type VerifyBody = {
 };
 
 function verificationMessage(playerId: string, walletAddress: string, gateMint: string) {
-  return `The Floor ranked verification\nPlayer: ${playerId}\nWallet: ${walletAddress}\nGate mint: ${gateMint}`;
+  return `PumpSt ranked verification\nPlayer: ${playerId}\nWallet: ${walletAddress}\nGate mint: ${gateMint}`;
 }
 
 async function readGateBalance(walletAddress: string, mint: string) {
@@ -27,7 +27,7 @@ async function readGateBalance(walletAddress: string, mint: string) {
     },
     body: JSON.stringify({
       jsonrpc: "2.0",
-      id: "the-floor-gate",
+      id: "pumpst-gate",
       method: "getTokenAccountsByOwner",
       params: [
         walletAddress,
@@ -69,7 +69,7 @@ async function readGateBalance(walletAddress: string, mint: string) {
 }
 
 export async function POST(request: Request) {
-  const gateMint = process.env.GATE_MINT;
+  const gateMint = process.env.PUMP_GATE_MINT ?? process.env.PUMPST_GATE_MINT ?? process.env.GATE_MINT;
   const threshold = BigInt(process.env.GATE_THRESHOLD ?? "0");
   const authorization = request.headers.get("authorization");
   const accessToken = authorization?.startsWith("Bearer ") ? authorization.slice("Bearer ".length) : null;

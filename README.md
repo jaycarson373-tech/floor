@@ -1,6 +1,6 @@
-# The Floor
+# PumpSt
 
-Next.js + Supabase implementation of The Floor: an isometric multiplayer trading game with soft Credits, ranked wallet gating, PvP duels, capital allocation, The Tape rounds, and dry-run-gated season payouts.
+Next.js + Supabase implementation of PumpSt: an isometric multiplayer trading game with soft Credits, ranked wallet gating, PvP duels, capital allocation, The Tape rounds, and dry-run-gated season payouts.
 
 ## Deploy To Vercel
 
@@ -39,6 +39,11 @@ Ranked wallet gate:
 ```bash
 HELIUS_RPC_URL=
 GATE_THRESHOLD=
+PUMP_GATE_MINT=
+NEXT_PUBLIC_PUMP_GATE_MINT=
+PUMPST_GATE_MINT=
+NEXT_PUBLIC_PUMPST_GATE_MINT=
+# Legacy fallback names are still supported during the rebrand.
 GATE_MINT=
 NEXT_PUBLIC_GATE_MINT=
 ```
@@ -80,6 +85,14 @@ All cron routes require `CRON_SECRET` through either `x-cron-secret` or `Authori
 
 - `POST /api/tick`
 - `POST /api/tape`
+- `POST /api/deal`
+- `POST /api/auction`
 - `POST /api/season`
 
 Keep payout routes in dry-run mode until the simulated distribution and ranked-only eligibility are verified.
+
+## PumpSt Backend Remap
+
+The PumpSt remap is additive: it creates city/property tables beside the existing game tables so existing data survives. The new backend model uses Operators, 100 Addresses, property Bids, commit-reveal Deals, Holdings, rent ledger entries, dry-run fee payout audits, heat/reputation state, and Helius scan watermarks.
+
+`PAYOUT_ENABLED` must stay `false` for this phase. PumpSt fee payouts are audit-only dry runs in this PR; live send execution is deliberately not implemented here.

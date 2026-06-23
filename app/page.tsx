@@ -9,30 +9,30 @@ const CA = "5bWpvvKw6Bssfa2Ti7j39pqEijWKqMCECVcwfhmrpump";
 const HOW_IT_WORKS = [
   {
     step: "01",
-    title: "Join The Floor",
-    body: "Connect and drop into the isometric trading floor. Pick your spot and start moving.",
+    title: "Join PumpSt",
+    body: "Connect and drop into the isometric trading street. Pick your spot and start moving.",
   },
   {
     step: "02",
     title: "Trade The Tape",
-    body: "Step onto an UP or DOWN pad to call the next move. Win the tape, earn rank, and chase the $FLOOR reward pool.",
+    body: "Step onto an UP or DOWN pad to call the next move. Win the tape, earn rank, and chase the $PUMPST reward pool.",
   },
   {
     step: "03",
     title: "Climb The Hierarchy",
-    body: "Challenge other traders in ranked duels. Build capital, rise through the floor, reach the Boss Office.",
+    body: "Challenge other traders in ranked duels. Build capital, rise through PumpSt, reach the Boss Office.",
   },
 ];
 
 const STATS = [
-  { value: "0", label: "$FLOOR won" },
-  { value: "0", label: "$FLOOR burned" },
+  { value: "0", label: "$PUMPST won" },
+  { value: "0", label: "$PUMPST burned" },
   { value: "LIVE", label: "season 1" },
 ];
 
 const REWARD_COUNTERS = [
   {
-    label: "Total $FLOOR Won",
+    label: "Total $PUMPST Won",
     value: "0",
     detail: "Ranked season rewards"
   },
@@ -62,7 +62,7 @@ export default function LandingPage() {
     <div className="lp-root">
       {/* ── Nav ───────────────────────────────────────────────── */}
       <header className="lp-nav">
-        <span className="lp-logo">THE FLOOR</span>
+        <span className="lp-logo">PUMPST</span>
         <nav className="lp-nav-links" aria-label="Primary">
           <a href="#how-it-works">How It Works</a>
           <a href="#rewards">Rewards</a>
@@ -78,14 +78,14 @@ export default function LandingPage() {
             </svg>
           </a>
         </nav>
-        <Link href="/game" className="lp-nav-cta">Enter The Floor</Link>
+        <Link href="/game" className="lp-nav-cta">Enter PumpSt</Link>
       </header>
 
       {/* ── Hero ──────────────────────────────────────────────── */}
       <section className="lp-hero" aria-label="Hero">
         <Image
           src="/banner.png"
-          alt="The Floor — isometric trading city"
+          alt="PumpSt — isometric trading city"
           fill
           priority
           className="lp-hero-bg"
@@ -95,14 +95,14 @@ export default function LandingPage() {
 
         <div className="lp-hero-content">
           <p className="lp-hero-eyebrow">Solana Trading MMO</p>
-          <h1 className="lp-hero-title">THE FLOOR</h1>
+          <h1 className="lp-hero-title">PUMPST</h1>
           <p className="lp-hero-sub">
-            An isometric trading floor where every step is a position.<br />
+            An isometric trading street where every step is a position.<br />
             Pick a side. Make your move.
           </p>
 
           <div className="lp-hero-actions">
-            <Link href="/game" className="lp-btn-primary">Enter The Floor</Link>
+            <Link href="/game" className="lp-btn-primary">Enter PumpSt</Link>
             <a
               href="https://x.com/thefloorsolana"
               target="_blank"
@@ -146,11 +146,11 @@ export default function LandingPage() {
       <section id="rewards" className="lp-rewards" aria-labelledby="rewards-heading">
         <div className="lp-section-inner">
           <div className="lp-rewards-head">
-            <span className="lp-rewards-kicker">$FLOOR Loop</span>
-            <h2 id="rewards-heading" className="lp-section-title">Win $FLOOR. Burn $FLOOR.</h2>
+            <span className="lp-rewards-kicker">$PUMPST Loop</span>
+            <h2 id="rewards-heading" className="lp-section-title">Win $PUMPST. Burn $PUMPST.</h2>
             <p>
-              Ranked seasons are designed around public counters for $FLOOR won by players
-              and $FLOOR bought back + burned by The Floor. Counters start at launch.
+              Ranked seasons are designed around public counters for $PUMPST won by players
+              and $PUMPST bought back + burned by PumpSt. Counters start at launch.
             </p>
           </div>
           <div className="lp-reward-grid">
@@ -183,7 +183,7 @@ export default function LandingPage() {
 
       {/* ── Footer ───────────────────────────────────────────── */}
       <footer className="lp-footer">
-        <span>The Floor — built on Solana. Follow us on{" "}
+        <span>PumpSt — built on Solana. Follow us on{" "}
           <a href="https://x.com/thefloorsolana" target="_blank" rel="noopener noreferrer">X</a>.
         </span>
       </footer>

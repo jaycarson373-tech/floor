@@ -180,7 +180,7 @@ export default function TapePanel({
       <div className="trading-header">
         <div>
           <strong>The Tape</strong>
-          <span>Live floor-wide PvP, soft Credits only</span>
+          <span>Live PumpSt-wide PvP, soft Credits only</span>
         </div>
         <span className={`tape-status ${round?.status ?? "idle"}`}>{round?.status ?? "idle"}</span>
       </div>

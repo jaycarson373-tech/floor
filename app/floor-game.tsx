@@ -124,7 +124,7 @@ function formatCredits(value: number | null | undefined) {
   return value.toLocaleString("en-US");
 }
 
-function formatFloorBalance(value: number | null | undefined) {
+function formatPumpstBalance(value: number | null | undefined) {
   if (typeof value !== "number" || value <= 0) return "0";
   return value.toLocaleString("en-US");
 }
@@ -259,10 +259,10 @@ function WalletAccess({
       <section className="wallet-gate">
         <div className="wallet-gate-copy">
           <span className="wallet-eyebrow">Spectator Access</span>
-          <h1>Connect to enter The Floor</h1>
+          <h1>Connect to enter PumpSt</h1>
           <p>
-            Phantom becomes your floor pass. We create your player profile, grant
-            the 10,000 test Credits, and read your future $FLOOR eligibility server-side.
+            Phantom becomes your PumpSt pass. We create your player profile, grant
+            the 10,000 test Credits, and read your future $PUMPST eligibility server-side.
           </p>
         </div>
 
@@ -278,7 +278,7 @@ function WalletAccess({
               <strong>10,000</strong>
             </div>
             <div>
-              <span>$FLOOR Holdings</span>
+              <span>$PUMPST Holdings</span>
               <strong>Verified after signature</strong>
             </div>
             <div>
@@ -355,8 +355,8 @@ function PlayerProfileCard({
           <strong>{formatCredits(credits)}</strong>
         </div>
         <div>
-          <span>$FLOOR Holdings</span>
-          <strong>{formatFloorBalance(player.gate_balance)}</strong>
+          <span>$PUMPST Holdings</span>
+          <strong>{formatPumpstBalance(player.gate_balance)}</strong>
         </div>
         <div>
           <span>Status</span>
@@ -662,35 +662,35 @@ function FloorCanvas({
       const edge = gx === 0 || gy === 0 || gx === GRID_WIDTH - 1 || gy === GRID_HEIGHT - 1;
       const tapeSide = tapeSideAt(gx, gy);
 
-      // Palette: navy floor with neon/amber/danger tones
+      // Palette: Quest-like lime map with PumpSt neon accents.
       const fill = tapeSide === "up"
-        ? `rgba(0,${60 + Math.round(pulse * 10)},35,0.9)`
+        ? `rgba(${38 + Math.round(pulse * 6)},${116 + Math.round(pulse * 8)},72,0.92)`
         : tapeSide === "down"
-          ? `rgba(${80 + Math.round(pulse * 8)},10,30,0.9)`
+          ? `rgba(${132 + Math.round(pulse * 8)},54,70,0.9)`
             : blocked
-              ? "#0d1520"
+              ? "#173036"
               : plaza
-                ? "#122130"
+                ? "#284c46"
                 : deskLane
-                  ? "#0e1b23"
+                  ? "#1f413b"
                   : marketLane
-                    ? "#111a2a"
+                    ? "#203d48"
                     : edge
-                      ? "#07131b"
-                      : "#0a1621";
+                      ? "#14342d"
+                      : "#1b3c36";
       const stroke = tapeSide === "up"
-        ? `rgba(0,255,157,${0.55 + pulse * 0.18})`
+        ? `rgba(144,255,118,${0.55 + pulse * 0.18})`
         : tapeSide === "down"
           ? `rgba(255,77,109,${0.55 + pulse * 0.18})`
           : blocked
             ? "#0a1018"
             : plaza
-              ? "rgba(255,194,71,0.18)"
+              ? "rgba(255,214,117,0.26)"
               : deskLane
-                ? "rgba(0,255,157,0.13)"
+                ? "rgba(144,255,118,0.18)"
                 : marketLane
                   ? "rgba(116,226,255,0.12)"
-              : "rgba(255,255,255,0.08)";
+              : "rgba(224,255,214,0.14)";
 
       drawDiamond(gx, gy, fill, stroke);
 
@@ -698,8 +698,8 @@ function FloorCanvas({
       if (!blocked) {
         const point = gridToScreen(gx, gy);
         const sheen = ctx.createLinearGradient(point.x - TILE_WIDTH / 2, point.y, point.x + TILE_WIDTH / 2, point.y + TILE_HEIGHT);
-        sheen.addColorStop(0, "rgba(255,255,255,0.04)");
-        sheen.addColorStop(0.5, "rgba(255,255,255,0.01)");
+        sheen.addColorStop(0, "rgba(235,255,216,0.07)");
+        sheen.addColorStop(0.5, "rgba(235,255,216,0.02)");
         sheen.addColorStop(1, "rgba(0,0,0,0)");
         ctx.save();
         ctx.beginPath();
@@ -764,8 +764,8 @@ function FloorCanvas({
 
     function drawMarketScreen(x: number, y: number, width: number, height: number, label: string, color: string, now: number) {
       ctx.save();
-      ctx.fillStyle = "rgba(3, 9, 15, 0.82)";
-      ctx.strokeStyle = "rgba(0, 255, 157, 0.24)";
+      ctx.fillStyle = "rgba(3, 18, 16, 0.78)";
+      ctx.strokeStyle = "rgba(128, 255, 122, 0.28)";
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.roundRect(x, y, width, height, 4);
@@ -773,7 +773,7 @@ function FloorCanvas({
       ctx.stroke();
 
       const glass = ctx.createLinearGradient(x, y, x + width, y + height);
-      glass.addColorStop(0, "rgba(0,255,157,0.12)");
+      glass.addColorStop(0, "rgba(128,255,122,0.14)");
       glass.addColorStop(0.48, "rgba(255,194,71,0.04)");
       glass.addColorStop(1, "rgba(0,0,0,0)");
       ctx.fillStyle = glass;
@@ -785,7 +785,7 @@ function FloorCanvas({
       ctx.textBaseline = "top";
       ctx.fillText(label, x + 8, y + 7);
 
-      ctx.strokeStyle = "rgba(255,255,255,0.07)";
+      ctx.strokeStyle = "rgba(220,255,210,0.1)";
       ctx.lineWidth = 1;
       for (let i = 0; i < 4; i += 1) {
         const lineY = y + 22 + i * ((height - 32) / 4);
@@ -830,13 +830,13 @@ function FloorCanvas({
       ctx.save();
 
       const glass = ctx.createLinearGradient(0, top, 0, horizon + 110);
-      glass.addColorStop(0, "rgba(5, 14, 28, 0.92)");
-      glass.addColorStop(0.56, "rgba(3, 9, 17, 0.66)");
+      glass.addColorStop(0, "rgba(9, 25, 24, 0.88)");
+      glass.addColorStop(0.56, "rgba(5, 19, 18, 0.58)");
       glass.addColorStop(1, "rgba(0, 0, 0, 0)");
       ctx.fillStyle = glass;
       ctx.fillRect(0, top, width, horizon + 112);
 
-      ctx.strokeStyle = "rgba(96, 164, 210, 0.12)";
+      ctx.strokeStyle = "rgba(142, 255, 190, 0.12)";
       ctx.lineWidth = 1;
       for (let x = 44; x < width + 80; x += 92) {
         ctx.beginPath();
@@ -845,7 +845,7 @@ function FloorCanvas({
         ctx.stroke();
       }
 
-      drawMarketScreen(Math.max(28, center - 470), top + 24, Math.min(285, width * 0.26), 124, "MARKET OVERVIEW", "#00ff9d", now);
+      drawMarketScreen(Math.max(28, center - 470), top + 24, Math.min(285, width * 0.26), 124, "MARKET OVERVIEW", "#7cff6b", now);
       drawMarketScreen(Math.max(54, center - 148), top + 64, Math.min(176, width * 0.18), 88, "GLOBAL RISK", "#65eaff", now + 700);
       drawMarketScreen(Math.min(width - 222, center + 80), top + 68, Math.min(200, width * 0.2), 82, "OPTIONS DESK", "#ffc247", now + 1200);
 
@@ -899,8 +899,8 @@ function FloorCanvas({
       }
 
       ctx.globalCompositeOperation = "lighter";
-      ctx.strokeStyle = `rgba(0,255,157,${0.28 + pulse * 0.1})`;
-      ctx.shadowColor = "#00ff9d";
+      ctx.strokeStyle = `rgba(124,255,107,${0.28 + pulse * 0.1})`;
+      ctx.shadowColor = "#7cff6b";
       ctx.shadowBlur = 16;
       ctx.lineWidth = 2;
       ctx.beginPath();
@@ -947,12 +947,12 @@ function FloorCanvas({
       ctx.lineTo(rim[2].x, rim[2].y);
       ctx.lineTo(rim[3].x, rim[3].y);
       ctx.closePath();
-      ctx.fillStyle = "rgba(7, 17, 23, 0.72)";
+      ctx.fillStyle = "rgba(19, 42, 38, 0.72)";
       ctx.fill();
 
       ctx.globalCompositeOperation = "lighter";
-      ctx.strokeStyle = `rgba(0,255,157,${0.42 + pulse * 0.16})`;
-      ctx.shadowColor = "#00ff9d";
+      ctx.strokeStyle = `rgba(124,255,107,${0.42 + pulse * 0.16})`;
+      ctx.shadowColor = "#7cff6b";
       ctx.shadowBlur = 18;
       ctx.lineWidth = 3;
       ctx.beginPath();
@@ -1005,7 +1005,7 @@ function FloorCanvas({
       ctx.textBaseline = "middle";
       ctx.fillStyle = "#d9fff1";
       ctx.shadowBlur = 24;
-      ctx.fillText("THE FLOOR", width / 2, y + plateH / 2 + 1);
+      ctx.fillText("PUMPST", width / 2, y + plateH / 2 + 1);
       ctx.restore();
     }
 
@@ -1303,9 +1303,9 @@ function FloorCanvas({
 
       // ── Night city skybox ──────────────────────────────────
       const sky = ctx.createLinearGradient(0, 0, 0, height * 0.55);
-      sky.addColorStop(0,   "#020510");
-      sky.addColorStop(0.5, "#060d1a");
-      sky.addColorStop(1,   "#0a0e1a");
+      sky.addColorStop(0,   "#07101d");
+      sky.addColorStop(0.5, "#0b1720");
+      sky.addColorStop(1,   "#11211f");
       ctx.fillStyle = sky;
       ctx.fillRect(0, 0, width, height);
 
@@ -1341,20 +1341,20 @@ function FloorCanvas({
 
       // floor area background
       const floorBg = ctx.createLinearGradient(0, height * 0.3, 0, height);
-      floorBg.addColorStop(0, "#0a0e1a");
-      floorBg.addColorStop(1, "#06090f");
+      floorBg.addColorStop(0, "#132825");
+      floorBg.addColorStop(1, "#081210");
       ctx.fillStyle = floorBg;
       ctx.fillRect(0, height * 0.3, width, height * 0.7);
 
       const officeBg = officeBgRef.current;
       if (officeBg) {
         ctx.save();
-        ctx.globalAlpha = 0.42;
+        ctx.globalAlpha = 0.3;
         drawCoverImage(officeBg, width, height);
         const officeShade = ctx.createLinearGradient(0, 0, 0, height);
-        officeShade.addColorStop(0, "rgba(0,4,10,0.12)");
-        officeShade.addColorStop(0.48, "rgba(0,4,10,0.38)");
-        officeShade.addColorStop(1, "rgba(0,4,10,0.72)");
+        officeShade.addColorStop(0, "rgba(4,12,16,0.18)");
+        officeShade.addColorStop(0.48, "rgba(5,18,18,0.32)");
+        officeShade.addColorStop(1, "rgba(4,12,8,0.58)");
         ctx.globalAlpha = 1;
         ctx.fillStyle = officeShade;
         ctx.fillRect(0, 0, width, height);
@@ -1711,11 +1711,11 @@ export default function FloorGame() {
 
   const verifyWalletForPlayer = useCallback(
     async (player: Player, accessToken: string, walletAddress: string, provider: PhantomProvider) => {
-      const gateMint = process.env.NEXT_PUBLIC_GATE_MINT ?? "";
+      const gateMint = process.env.NEXT_PUBLIC_PUMP_GATE_MINT ?? process.env.NEXT_PUBLIC_PUMPST_GATE_MINT ?? process.env.NEXT_PUBLIC_GATE_MINT ?? "";
       if (!gateMint) return;
 
       try {
-        const message = `The Floor ranked verification\nPlayer: ${player.id}\nWallet: ${walletAddress}\nGate mint: ${gateMint}`;
+        const message = `PumpSt ranked verification\nPlayer: ${player.id}\nWallet: ${walletAddress}\nGate mint: ${gateMint}`;
         const signed = await provider.signMessage(new TextEncoder().encode(message), "utf8");
         const response = await fetch("/api/wallet/verify", {
           method: "POST",
@@ -1870,7 +1870,7 @@ export default function FloorGame() {
     return (
       <main className="entry-wrap">
         <section className="entry-panel">
-          <h1>The Floor</h1>
+          <h1>PumpSt</h1>
           <p>Add Supabase environment values, then restart the app.</p>
           <div className="error" role="status">
             {configError}
@@ -1890,7 +1890,7 @@ export default function FloorGame() {
     <main className="app-shell">
       <header className="topbar">
         <div className="brand">
-          <strong>The Floor</strong>
+          <strong>PumpSt</strong>
           <span className="brand-sub">{shortAddress(localPlayer.wallet_address ?? sessionWalletAddress)}</span>
         </div>
         <div className="hud">
@@ -1911,7 +1911,7 @@ export default function FloorGame() {
             target="_blank"
             rel="noopener noreferrer"
             className="topbar-x-link"
-            aria-label="Follow The Floor on X"
+            aria-label="Follow PumpSt on X"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
               <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.911-5.622Zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
@@ -1929,6 +1929,41 @@ export default function FloorGame() {
             selectedTile={selectedTile}
             onTileClick={move}
           />
+          <div className="quest-controls" aria-label="Movement controls">
+            <button
+              type="button"
+              className="quest-btn quest-up"
+              aria-label="Move north"
+              onClick={() => move({ gx: localPlayer.gx, gy: localPlayer.gy - 1 })}
+            >
+              ▲
+            </button>
+            <button
+              type="button"
+              className="quest-btn quest-left"
+              aria-label="Move west"
+              onClick={() => move({ gx: localPlayer.gx - 1, gy: localPlayer.gy })}
+            >
+              ◀
+            </button>
+            <button
+              type="button"
+              className="quest-btn quest-right"
+              aria-label="Move east"
+              onClick={() => move({ gx: localPlayer.gx + 1, gy: localPlayer.gy })}
+            >
+              ▶
+            </button>
+            <button
+              type="button"
+              className="quest-btn quest-down"
+              aria-label="Move south"
+              onClick={() => move({ gx: localPlayer.gx, gy: localPlayer.gy + 1 })}
+            >
+              ▼
+            </button>
+            <span className="quest-status">{queuedPath.length ? "Walking..." : "Standing..."}</span>
+          </div>
         </section>
         {supabase ? (
           <div className="side-panels">
