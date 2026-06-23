@@ -66,6 +66,7 @@ button, input, select { font: inherit; }
   display: flex;
   align-items: baseline;
   gap: 10px;
+  min-width: 0;
 }
 
 .brand strong {
@@ -80,6 +81,10 @@ button, input, select { font: inherit; }
 .brand-sub {
   color: var(--muted);
   font-size: 12px;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .topbar-x-link {
@@ -160,8 +165,8 @@ button, input, select { font: inherit; }
   min-height: 0;
   overflow: hidden;
   background:
-    linear-gradient(180deg, rgba(2, 6, 13, 0.7), rgba(1, 5, 8, 0.94)),
-    radial-gradient(circle at 48% 62%, rgba(0, 255, 157, 0.08), transparent 34%);
+    linear-gradient(180deg, rgba(9, 25, 25, 0.72), rgba(4, 12, 9, 0.94)),
+    radial-gradient(circle at 48% 62%, rgba(124, 255, 107, 0.12), transparent 34%);
 }
 
 .game-canvas {
@@ -169,6 +174,62 @@ button, input, select { font: inherit; }
   height: 100%;
   display: block;
   cursor: crosshair;
+}
+
+.quest-controls {
+  position: absolute;
+  left: 22px;
+  bottom: 24px;
+  width: 150px;
+  height: 150px;
+  display: none;
+  grid-template-columns: repeat(3, 46px);
+  grid-template-rows: repeat(3, 46px);
+  gap: 6px;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.quest-btn {
+  width: 46px;
+  height: 46px;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  border-radius: 14px;
+  background: rgba(232, 255, 214, 0.22);
+  color: #fffef2;
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(9px);
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+
+.quest-btn:active {
+  transform: translateY(1px);
+  background: rgba(124, 255, 107, 0.34);
+}
+
+.quest-up { grid-column: 2; grid-row: 1; }
+.quest-left { grid-column: 1; grid-row: 2; }
+.quest-right { grid-column: 3; grid-row: 2; }
+.quest-down { grid-column: 2; grid-row: 3; }
+
+.quest-status {
+  position: absolute;
+  left: 132px;
+  bottom: 6px;
+  min-width: 112px;
+  padding: 6px 12px;
+  border-radius: 18px;
+  background: rgba(13, 35, 29, 0.78);
+  color: #f4ffe9;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.24);
+  backdrop-filter: blur(8px);
 }
 
 /* ── Side Panel with Tabs ───────────────────────────────────── */
@@ -1099,15 +1160,26 @@ button, input, select { font: inherit; }
 
 /* ── Responsive ─────────────────────────────────────────────── */
 @media (max-width: 760px) {
-  .app-shell { grid-template-rows: 52px 1fr; overflow: visible; }
+  .app-shell {
+    grid-template-rows: 64px 1fr;
+    overflow: visible;
+    background: #10231d;
+  }
 
   .play-space {
     grid-template-columns: 1fr;
-    grid-template-rows: clamp(320px, 48vw, 520px) auto;
+    grid-template-rows: minmax(560px, calc(100svh - 64px)) auto;
     overflow: visible;
   }
 
-  .stage { height: clamp(320px, 48vw, 520px); }
+  .stage {
+    height: calc(100svh - 64px);
+    min-height: calc(100svh - 64px);
+  }
+
+  .game-canvas {
+    cursor: default;
+  }
 
   .side-panels {
     border-top: 1px solid rgba(0,255,157,0.08);
@@ -1115,8 +1187,53 @@ button, input, select { font: inherit; }
     min-height: 520px;
   }
 
-  .topbar { padding: 0 14px; }
+  .topbar {
+    height: 64px;
+    padding: 8px 12px;
+    background: rgba(7, 16, 19, 0.9);
+    border-bottom-color: rgba(124,255,107,0.18);
+  }
+
+  .brand {
+    align-items: center;
+    gap: 8px;
+    padding: 9px 12px;
+    border-radius: 18px;
+    background: rgba(6, 14, 13, 0.78);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.24);
+  }
+
+  .brand strong {
+    font-size: 14px;
+    letter-spacing: 0.02em;
+  }
+
+  .brand-sub {
+    max-width: 92px;
+    font-size: 11px;
+  }
+
+  .hud {
+    gap: 6px;
+  }
+
+  .hud-chip {
+    min-height: 36px;
+    padding: 6px 10px;
+    border-radius: 18px;
+    background: rgba(8, 17, 16, 0.82);
+    border-color: rgba(124,255,107,0.2);
+  }
+
   .hud-chip .lbl { display: none; }
+
+  .topbar-x-link {
+    display: none;
+  }
+
+  .quest-controls {
+    display: grid;
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════
