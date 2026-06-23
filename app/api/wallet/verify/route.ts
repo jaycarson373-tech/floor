@@ -69,7 +69,7 @@ async function readGateBalance(walletAddress: string, mint: string) {
 }
 
 export async function POST(request: Request) {
-  const gateMint = process.env.PUMPST_GATE_MINT ?? process.env.GATE_MINT;
+  const gateMint = process.env.PUMP_GATE_MINT ?? process.env.PUMPST_GATE_MINT ?? process.env.GATE_MINT;
   const threshold = BigInt(process.env.GATE_THRESHOLD ?? "0");
   const authorization = request.headers.get("authorization");
   const accessToken = authorization?.startsWith("Bearer ") ? authorization.slice("Bearer ".length) : null;

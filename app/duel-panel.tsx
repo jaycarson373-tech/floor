@@ -103,7 +103,7 @@ export default function DuelPanel({
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const gateMint = process.env.NEXT_PUBLIC_PUMPST_GATE_MINT ?? process.env.NEXT_PUBLIC_GATE_MINT ?? "";
+  const gateMint = process.env.NEXT_PUBLIC_PUMP_GATE_MINT ?? process.env.NEXT_PUBLIC_PUMPST_GATE_MINT ?? process.env.NEXT_PUBLIC_GATE_MINT ?? "";
   const openDuels = useMemo(() => duels.filter((duel) => duel.status === "open"), [duels]);
 
   const loadAll = useCallback(async () => {

@@ -1711,7 +1711,7 @@ export default function FloorGame() {
 
   const verifyWalletForPlayer = useCallback(
     async (player: Player, accessToken: string, walletAddress: string, provider: PhantomProvider) => {
-      const gateMint = process.env.NEXT_PUBLIC_PUMPST_GATE_MINT ?? process.env.NEXT_PUBLIC_GATE_MINT ?? "";
+      const gateMint = process.env.NEXT_PUBLIC_PUMP_GATE_MINT ?? process.env.NEXT_PUBLIC_PUMPST_GATE_MINT ?? process.env.NEXT_PUBLIC_GATE_MINT ?? "";
       if (!gateMint) return;
 
       try {
