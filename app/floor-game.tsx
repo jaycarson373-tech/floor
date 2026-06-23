@@ -124,7 +124,7 @@ function formatCredits(value: number | null | undefined) {
   return value.toLocaleString("en-US");
 }
 
-function formatFloorBalance(value: number | null | undefined) {
+function formatPumpstBalance(value: number | null | undefined) {
   if (typeof value !== "number" || value <= 0) return "0";
   return value.toLocaleString("en-US");
 }
@@ -259,10 +259,10 @@ function WalletAccess({
       <section className="wallet-gate">
         <div className="wallet-gate-copy">
           <span className="wallet-eyebrow">Spectator Access</span>
-          <h1>Connect to enter The Floor</h1>
+          <h1>Connect to enter PumpSt</h1>
           <p>
-            Phantom becomes your floor pass. We create your player profile, grant
-            the 10,000 test Credits, and read your future $FLOOR eligibility server-side.
+            Phantom becomes your PumpSt pass. We create your player profile, grant
+            the 10,000 test Credits, and read your future $PUMPST eligibility server-side.
           </p>
         </div>
 
@@ -278,7 +278,7 @@ function WalletAccess({
               <strong>10,000</strong>
             </div>
             <div>
-              <span>$FLOOR Holdings</span>
+              <span>$PUMPST Holdings</span>
               <strong>Verified after signature</strong>
             </div>
             <div>
@@ -355,8 +355,8 @@ function PlayerProfileCard({
           <strong>{formatCredits(credits)}</strong>
         </div>
         <div>
-          <span>$FLOOR Holdings</span>
-          <strong>{formatFloorBalance(player.gate_balance)}</strong>
+          <span>$PUMPST Holdings</span>
+          <strong>{formatPumpstBalance(player.gate_balance)}</strong>
         </div>
         <div>
           <span>Status</span>
@@ -1005,7 +1005,7 @@ function FloorCanvas({
       ctx.textBaseline = "middle";
       ctx.fillStyle = "#d9fff1";
       ctx.shadowBlur = 24;
-      ctx.fillText("THE FLOOR", width / 2, y + plateH / 2 + 1);
+      ctx.fillText("PUMPST", width / 2, y + plateH / 2 + 1);
       ctx.restore();
     }
 
@@ -1711,11 +1711,11 @@ export default function FloorGame() {
 
   const verifyWalletForPlayer = useCallback(
     async (player: Player, accessToken: string, walletAddress: string, provider: PhantomProvider) => {
-      const gateMint = process.env.NEXT_PUBLIC_GATE_MINT ?? "";
+      const gateMint = process.env.NEXT_PUBLIC_PUMPST_GATE_MINT ?? process.env.NEXT_PUBLIC_GATE_MINT ?? "";
       if (!gateMint) return;
 
       try {
-        const message = `The Floor ranked verification\nPlayer: ${player.id}\nWallet: ${walletAddress}\nGate mint: ${gateMint}`;
+        const message = `PumpSt ranked verification\nPlayer: ${player.id}\nWallet: ${walletAddress}\nGate mint: ${gateMint}`;
         const signed = await provider.signMessage(new TextEncoder().encode(message), "utf8");
         const response = await fetch("/api/wallet/verify", {
           method: "POST",
@@ -1870,7 +1870,7 @@ export default function FloorGame() {
     return (
       <main className="entry-wrap">
         <section className="entry-panel">
-          <h1>The Floor</h1>
+          <h1>PumpSt</h1>
           <p>Add Supabase environment values, then restart the app.</p>
           <div className="error" role="status">
             {configError}
@@ -1890,7 +1890,7 @@ export default function FloorGame() {
     <main className="app-shell">
       <header className="topbar">
         <div className="brand">
-          <strong>The Floor</strong>
+          <strong>PumpSt</strong>
           <span className="brand-sub">{shortAddress(localPlayer.wallet_address ?? sessionWalletAddress)}</span>
         </div>
         <div className="hud">
@@ -1911,7 +1911,7 @@ export default function FloorGame() {
             target="_blank"
             rel="noopener noreferrer"
             className="topbar-x-link"
-            aria-label="Follow The Floor on X"
+            aria-label="Follow PumpSt on X"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
               <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.911-5.622Zm-1.161 17.52h1.833L7.084 4.126H5.117z" />

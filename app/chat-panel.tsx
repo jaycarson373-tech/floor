@@ -144,7 +144,7 @@ create policy "Anyone can read"
 
   return (
     <div className="chat-panel">
-      <div className="chat-messages" aria-live="polite" aria-label="Floor chat">
+      <div className="chat-messages" aria-live="polite" aria-label="PumpSt chat">
         {messages.length === 0 && (
           <p className="chat-empty">No messages yet. Say something.</p>
         )}

@@ -1,6 +1,6 @@
-# The Floor
+# PumpSt
 
-Next.js + Supabase implementation of The Floor: an isometric multiplayer trading game with soft Credits, ranked wallet gating, PvP duels, capital allocation, The Tape rounds, and dry-run-gated season payouts.
+Next.js + Supabase implementation of PumpSt: an isometric multiplayer trading game with soft Credits, ranked wallet gating, PvP duels, capital allocation, The Tape rounds, and dry-run-gated season payouts.
 
 ## Deploy To Vercel
 
@@ -39,6 +39,9 @@ Ranked wallet gate:
 ```bash
 HELIUS_RPC_URL=
 GATE_THRESHOLD=
+PUMPST_GATE_MINT=
+NEXT_PUBLIC_PUMPST_GATE_MINT=
+# Legacy fallback names are still supported during the rebrand.
 GATE_MINT=
 NEXT_PUBLIC_GATE_MINT=
 ```

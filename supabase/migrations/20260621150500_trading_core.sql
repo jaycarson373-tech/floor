@@ -109,7 +109,7 @@ create policy "orders readable by owner"
 
 insert into public.assets (id, symbol, name, base_price, volatility)
 values
-  ('10000000-0000-4000-8000-000000000001', 'FLOOR', 'Floor Index', 2500, 95),
+  ('10000000-0000-4000-8000-000000000001', 'PUMPST', 'PumpSt Index', 2500, 95),
   ('10000000-0000-4000-8000-000000000002', 'NUGT', 'Nugget Trust', 1800, 70),
   ('10000000-0000-4000-8000-000000000003', 'TAPE', 'Tape Futures', 940, 45),
   ('10000000-0000-4000-8000-000000000004', 'GLIM', 'Glimmer Basket', 3200, 130),
